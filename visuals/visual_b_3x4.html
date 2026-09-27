@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Detection Latency: Manual Chain vs. OcuLA Target</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; border: none; outline: none; }
+  html, body {
+    width: 960px; height: 1280px; background-color: #FFFFFF; color: #1E293B;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+  }
+  .canvas {
+    width: 960px; height: 1280px; background: #FFFFFF;
+    padding: 56px 54px 40px 54px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+
+  /* HEADER BLOCK */
+  .slide-header { display: flex; flex-direction: column; gap: 8px; }
+  .eyebrow-row { display: flex; align-items: center; gap: 10px; }
+  .eyebrow-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; color: #4A7A5B; background: #EDF4EE;
+    padding: 3.5px 10px; border-radius: 4px;
+  }
+  .eyebrow-context {
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.6px; text-transform: uppercase; color: #64748B;
+  }
+  .slide-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 46px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; color: #0F172A; line-height: 1.05; margin-top: 4px;
+  }
+  .slide-subtitle {
+    font-family: 'Inter', sans-serif; font-size: 16.5px; color: #64748B; font-weight: 400;
+  }
+
+  /* UNIFIED CONTENT BODY: PROPORTIONALLY DISTRIBUTED */
+  .content-body {
+    display: flex; flex-direction: column; justify-content: space-between;
+    flex: 1; margin: 44px 0 34px 0;
+  }
+
+  /* TRACK SECTIONS */
+  .track-section {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .track-header-row {
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .entity-group {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .entity-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.8px; text-transform: uppercase; padding: 4px 10px; border-radius: 4px;
+  }
+  .entity-tag.status-quo { color: #A13D3D; background: #FEE2E2; }
+  .entity-tag.ocula { color: #4A7A5B; background: #DCFCE7; }
+
+  .entity-label {
+    font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #475569;
+  }
+
+  .metric-headline {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 64px; font-weight: 800; line-height: 0.95;
+  }
+  .metric-headline.status-quo { color: #A13D3D; }
+  .metric-headline.ocula { color: #4A7A5B; }
+
+  /* TIMELINE BAR TRACK */
+  .bar-track {
+    width: 100%; height: 58px; background: #F1F5F9; border-radius: 6px;
+    border: 1px solid #E2E8F0; position: relative; display: flex; align-items: center;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 5px; display: flex; align-items: center;
+    padding: 0 20px; justify-content: flex-end;
+  }
+  .bar-fill.status-quo {
+    background: #A13D3D; width: 95%;
+  }
+  .bar-fill.ocula {
+    background: #4A7A5B; width: 2.8%; min-width: 20px;
+  }
+
+  .bar-inner-text {
+    font-family: 'JetBrains Mono', monospace; font-size: 14.5px; font-weight: 700;
+    color: #FFFFFF; letter-spacing: 0.5px; white-space: nowrap;
+  }
+  .bar-outside-group {
+    display: flex; align-items: baseline; gap: 14px; margin-left: 18px;
+  }
+  .outside-metric {
+    font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 800;
+    color: #2E7D4F;
+  }
+  .outside-desc {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600;
+    color: #334155;
+  }
+
+  /* SUPPORTING TEXT (MAX 2 SHORT LINES) */
+  .supporting-text {
+    display: flex; flex-direction: column; gap: 5px; font-size: 15.5px; color: #475569; line-height: 1.35;
+  }
+  .supporting-text .primary-line { font-weight: 600; color: #1E293B; }
+  .supporting-text .secondary-line { font-size: 14px; color: #64748B; }
+
+  /* OCULA TARGET GROUP (STACKED WITH ROADMAP BADGE) */
+  .ocula-group {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  /* ROADMAP BADGE (Deck convention) */
+  .roadmap-container {
+    display: flex; align-items: center; margin-top: 2px;
+  }
+  .tag-roadmap {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #FBEADA; color: #B4590A; border: 1px solid #F5D3B3;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.05em; padding: 6px 14px; border-radius: 5px;
+    text-transform: uppercase;
+  }
+  .tag-roadmap-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #B4590A;
+  }
+
+  /* DELTA HERO CARD */
+  .delta-hero-card {
+    background: #FAFBF9; border: 1px solid #E2E8F0; border-left: 6px solid #4A7A5B;
+    border-radius: 10px; padding: 26px 30px; display: grid; grid-template-columns: auto 1fr;
+    gap: 26px; align-items: center;
+  }
+  .delta-num {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 66px; font-weight: 800;
+    color: #4A7A5B; line-height: 0.95; white-space: nowrap;
+  }
+  .delta-text-col {
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .delta-title {
+    font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 800;
+    color: #0F172A; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .delta-desc {
+    font-family: 'Inter', sans-serif; font-size: 14px; color: #475569; line-height: 1.4;
+  }
+
+  /* FOOTNOTE & FOOTER */
+  .slide-footer {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-top: 1px solid #E2E8F0; padding-top: 16px; font-size: 11.5px;
+    color: #64748B; font-family: 'Inter', sans-serif;
+  }
+  .footer-source {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .footer-source strong { color: #334155; font-weight: 600; }
+  .footer-tag { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #475569; }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- HEADER BLOCK -->
+  <div class="slide-header">
+    <div class="eyebrow-row">
+      <span class="eyebrow-tag">Slide 5 Inset</span>
+      <span class="eyebrow-context">Smart India Hackathon 2026 &bull; PS 26178</span>
+    </div>
+    <div class="slide-title">Detection Latency: Manual Chain vs. OcuLA Target</div>
+    <div class="slide-subtitle">Illustrative timeline, current chain vs. target architecture</div>
+  </div>
+
+  <!-- CONTENT BODY: BALANCED AND VISUALLY GROUNDED -->
+  <div class="content-body">
+
+    <!-- 1. STATUS QUO (BEFORE) -->
+    <div class="track-section">
+      <div class="track-header-row">
+        <div class="entity-group">
+          <span class="entity-tag status-quo">Status Quo</span>
+          <span class="entity-label">Manual Administrative Forwarding</span>
+        </div>
+        <div class="metric-headline status-quo">13.5 Hours</div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill status-quo">
+          <span class="bar-inner-text">13.5 Hours (Administrative Deliberation Delay)</span>
+        </div>
+      </div>
+      <div class="supporting-text">
+        <span class="primary-line">Manual NGO alert &rarr; WhatsApp forwarding chain &rarr; SMS dispatched at 10:35 PM</span>
+        <span class="secondary-line">Wayanad, July 2024 (referenced for operational scale only)</span>
+      </div>
+    </div>
+
+    <!-- 2. OCULA TARGET (AFTER) + ROADMAP BADGE -->
+    <div class="ocula-group">
+      <div class="track-section">
+        <div class="track-header-row">
+          <div class="entity-group">
+            <span class="entity-tag ocula">OcuLA Target</span>
+            <span class="entity-label">Autonomous Edge Inference &amp; Mesh Relay</span>
+          </div>
+          <div class="metric-headline ocula">&lt; 1.2 Seconds</div>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill ocula"></div>
+          <div class="bar-outside-group">
+            <span class="outside-metric">&lt; 1.2s</span>
+            <span class="outside-desc">Target Design Latency (On-Device TinyML FFT + LoRa Uplink)</span>
+          </div>
+        </div>
+        <div class="supporting-text">
+          <span class="primary-line">On-device inference + LoRa uplink to trip a local alert</span>
+          <span class="secondary-line">End-to-end target design latency (autonomous closed-loop)</span>
+        </div>
+      </div>
+
+      <!-- ROADMAP BADGE -->
+      <div class="roadmap-container">
+        <span class="tag-roadmap">
+          <span class="tag-roadmap-dot"></span>
+          ROADMAP &mdash; LoRa + on-device classification not yet integrated
+        </span>
+      </div>
+    </div>
+
+    <!-- 3. DELTA HERO CARD -->
+    <div class="delta-hero-card">
+      <div class="delta-num">~40,000&times;</div>
+      <div class="delta-text-col">
+        <span class="delta-title">Reduction in Theoretical Worst-Case Latency</span>
+        <span class="delta-desc">Replaces manual multi-agency administrative forwarding with autonomous on-device thresholding and siren actuation.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="slide-footer">
+    <div class="footer-source">
+      <span><strong>Source for 13.5h reference:</strong> Hume Centre for Ecology warning log (09:00 AM) to district text dispatch (10:35 PM), Wayanad, July 29, 2024.</span>
+    </div>
+    <span class="footer-tag">OCULA &bull; SIH 2026 &bull; PS 26178</span>
+  </div>
+
+</div>
+</body>
+</html>

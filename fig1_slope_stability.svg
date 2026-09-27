@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 400" width="100%" height="auto">
+  <defs>
+    <linearGradient id="stableGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4A7A5B" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#4A7A5B" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="unstableGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A13D3D" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="#A13D3D" stop-opacity="0.18"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="750" height="400" fill="#FFFFFF" rx="8" />
+
+  <!-- Zones -->
+  <rect x="80" y="45" width="620" height="187.5" fill="url(#stableGrad)" />
+  <rect x="80" y="232.5" width="620" height="112.5" fill="url(#unstableGrad)" />
+
+  <!-- Horizontal grid -->
+  <line x1="80" y1="307.49999999999994" x2="700" y2="307.49999999999994" stroke="#CBD5E1" stroke-width="1" stroke-dasharray='4,4' />
+  <text x="68" y="311.49999999999994" font-family="Inter, sans-serif" font-size="11" fill="#CBD5E1" text-anchor="end" font-weight="400">0.8</text>
+  <line x1="80" y1="270.0" x2="700" y2="270.0" stroke="#CBD5E1" stroke-width="1" stroke-dasharray='4,4' />
+  <text x="68" y="274.0" font-family="Inter, sans-serif" font-size="11" fill="#CBD5E1" text-anchor="end" font-weight="400">0.9</text>
+  <line x1="80" y1="232.5" x2="700" y2="232.5" stroke="#A13D3D" stroke-width="2"  />
+  <text x="68" y="236.5" font-family="Inter, sans-serif" font-size="11" fill="#A13D3D" text-anchor="end" font-weight="600">1.0</text>
+  <line x1="80" y1="194.99999999999997" x2="700" y2="194.99999999999997" stroke="#CBD5E1" stroke-width="1" stroke-dasharray='4,4' />
+  <text x="68" y="198.99999999999997" font-family="Inter, sans-serif" font-size="11" fill="#CBD5E1" text-anchor="end" font-weight="400">1.1</text>
+  <line x1="80" y1="157.5" x2="700" y2="157.5" stroke="#CBD5E1" stroke-width="1" stroke-dasharray='4,4' />
+  <text x="68" y="161.5" font-family="Inter, sans-serif" font-size="11" fill="#CBD5E1" text-anchor="end" font-weight="400">1.2</text>
+  <line x1="80" y1="119.99999999999997" x2="700" y2="119.99999999999997" stroke="#CBD5E1" stroke-width="1" stroke-dasharray='4,4' />
+  <text x="68" y="123.99999999999997" font-family="Inter, sans-serif" font-size="11" fill="#CBD5E1" text-anchor="end" font-weight="400">1.3</text>
+  <line x1="80" y1="82.50000000000003" x2="700" y2="82.50000000000003" stroke="#CBD5E1" stroke-width="1" stroke-dasharray='4,4' />
+  <text x="68" y="86.50000000000003" font-family="Inter, sans-serif" font-size="11" fill="#CBD5E1" text-anchor="end" font-weight="400">1.4</text>
+  <line x1="80.0" y1="45" x2="80.0" y2="345" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3" />
+  <text x="80.0" y="363" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">0.0</text>
+  <line x1="204.0" y1="45" x2="204.0" y2="345" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3" />
+  <text x="204.0" y="363" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">0.2</text>
+  <line x1="328.0" y1="45" x2="328.0" y2="345" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3" />
+  <text x="328.0" y="363" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">0.4</text>
+  <line x1="452.0" y1="45" x2="452.0" y2="345" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3" />
+  <text x="452.0" y="363" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">0.6</text>
+  <line x1="576.0" y1="45" x2="576.0" y2="345" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3" />
+  <text x="576.0" y="363" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">0.8</text>
+  <line x1="700.0" y1="45" x2="700.0" y2="345" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3" />
+  <text x="700.0" y="363" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">1.0</text>
+
+  <!-- Critical Failure Threshold Label -->
+  <rect x="490" y="204.5" width="200" height="24" rx="4" fill="#FEE2E2" stroke="#FECACA" stroke-width="1"/>
+  <text x="590" y="220.5" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#A13D3D" text-anchor="middle" font-weight="700">CRITICAL FAILURE (FS = 1.00)</text>
+
+  <!-- Curve -->
+  <polyline points="80.0,103.0 86.2,104.8 92.4,106.7 98.6,108.5 104.8,110.3 111.0,112.1 117.2,114.0 123.4,115.8 129.6,117.6 135.8,119.5 142.0,121.3 148.2,123.1 154.4,125.0 160.6,126.8 166.8,128.6 173.0,130.5 179.2,132.3 185.4,134.1 191.6,136.0 197.8,137.8 204.0,139.6 210.2,141.4 216.4,143.3 222.6,145.1 228.8,146.9 235.0,148.8 241.2,150.6 247.4,152.4 253.6,154.3 259.8,156.1 266.0,157.9 272.2,159.8 278.4,161.6 284.6,163.4 290.8,165.3 297.0,167.1 303.2,168.9 309.4,170.7 315.6,172.6 321.8,174.4 328.0,176.2 334.2,178.1 340.4,179.9 346.6,181.7 352.8,183.6 359.0,185.4 365.2,187.2 371.4,189.1 377.6,190.9 383.8,192.7 390.0,194.6 396.2,196.4 402.4,198.2 408.6,200.0 414.8,201.9 421.0,203.7 427.2,205.5 433.4,207.4 439.6,209.2 445.8,211.0 452.0,212.9 458.2,214.7 464.4,216.5 470.6,218.4 476.8,220.2 483.0,222.0 489.2,223.9 495.4,225.7 501.6,227.5 507.8,229.3 514.0,231.2 520.2,233.0 526.4,234.8 532.6,236.7 538.8,238.5 545.0,240.3 551.2,242.2 557.4,244.0 563.6,245.8 569.8,247.7 576.0,249.5 582.2,251.3 588.4,253.2 594.6,255.0 600.8,256.8 607.0,258.6 613.2,260.5 619.4,262.3 625.6,264.1 631.8,266.0 638.0,267.8 644.2,269.6 650.4,271.5 656.6,273.3 662.8,275.1 669.0,277.0 675.2,278.8 681.4,280.6 687.6,282.5 693.8,284.3 700.0,286.1" fill="none" stroke="#1E293B" stroke-width="3" stroke-linecap="round" />
+
+  <!-- Critical Point Marker -->
+  <circle cx="518.3399999999999" cy="232.5" r="6" fill="#A13D3D" stroke="#FFFFFF" stroke-width="2" />
+  <line x1="518.3399999999999" y1="232.5" x2="518.3399999999999" y2="345" stroke="#A13D3D" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="518.3399999999999" y="337" font-family="JetBrains Mono, monospace" font-size="10" fill="#A13D3D" text-anchor="middle" font-weight="700">m_crit = 0.71 (570mm/48h)</text>
+
+  <!-- Labels -->
+  <text x="390.0" y="388" font-family="Inter, sans-serif" font-size="12" fill="#1E293B" font-weight="600" text-anchor="middle">Soil Saturation Ratio (m = h_w / z)</text>
+  <text transform="rotate(-90)" x="-195.0" y="28" font-family="Inter, sans-serif" font-size="12" fill="#1E293B" font-weight="600" text-anchor="middle">Factor of Safety (FS)</text>
+
+  <!-- Zone Badges -->
+  <text x="100" y="71" font-family="Inter, sans-serif" font-size="11.5" fill="#2E7D4F" font-weight="700">STABLE REGIME (FS &gt; 1.0)</text>
+  <text x="100" y="327" font-family="Inter, sans-serif" font-size="11.5" fill="#A13D3D" font-weight="700">SLOPE FAILURE &amp; DEBRIS FLOW (FS &lt; 1.0)</text>
+</svg>

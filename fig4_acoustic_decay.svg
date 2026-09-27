@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 380" width="100%" height="auto">
+  <rect width="750" height="380" fill="#FFFFFF" rx="8" />
+
+  <!-- Title (font-size 17.5px) -->
+  <text x="50" y="32" font-family="Barlow Condensed, sans-serif" font-size="17.5" font-weight="800" fill="#0F172A" text-transform="uppercase">ACOUSTIC PROPAGATION DECAY IN TROPICAL MONSOON CONDITIONS</text>
+
+  <!-- 85-100 dB Target Penetration Band (from slide 5) -->
+  <rect x="75" y="94.41176470588236" width="630" height="49.411764705882334" fill="#2E7D4F" fill-opacity="0.08" />
+  <line x1="75" y1="143.8235294117647" x2="705" y2="143.8235294117647" stroke="#2E7D4F" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="75" y1="94.41176470588236" x2="705" y2="94.41176470588236" stroke="#2E7D4F" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="89" y="110.41176470588236" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#166534" font-weight="700">85–100 dB TARGET AUDIBILITY ZONE (Per Slide 5 Inset)</text>
+
+  <!-- Threshold lines -->
+  <line x1="75" y1="176.76470588235293" x2="705" y2="176.76470588235293" stroke="#D97706" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <rect x="465" y="154.76470588235293" width="235" height="20" rx="3" fill="#FEF3C7" stroke="#FDE68A"/>
+  <text x="583" y="168.76470588235293" font-family="JetBrains Mono, monospace" font-size="10" fill="#B45309" font-weight="700" text-anchor="middle">NOCTURNAL WAKING THRESHOLD (75 dB)</text>
+
+  <line x1="75" y1="259.11764705882354" x2="705" y2="259.11764705882354" stroke="#64748B" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <rect x="465" y="265.11764705882354" width="235" height="20" rx="3" fill="#F1F5F9" stroke="#E2E8F0"/>
+  <text x="583" y="279.11764705882354" font-family="JetBrains Mono, monospace" font-size="10" fill="#475569" font-weight="700" text-anchor="middle">AMBIENT RAIN NOISE ON TIN ROOFS (50 dB)</text>
+
+  <line x1="75" y1="308.52941176470586" x2="705" y2="308.52941176470586" stroke="#A13D3D" stroke-width="1.5" stroke-dasharray="2,2"/>
+  <text x="695" y="322.52941176470586" font-family="JetBrains Mono, monospace" font-size="10" fill="#A13D3D" font-weight="600" text-anchor="end">Phone Vibration / SMS Notification (35 dB) — Inaudible (0 dB Lead)</text>
+
+  <!-- Y axis ticks -->
+  <line x1="75" y1="292.05882352941177" x2="705" y2="292.05882352941177" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="65" y="296.05882352941177" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="end">40 dB</text>
+  <line x1="75" y1="226.17647058823528" x2="705" y2="226.17647058823528" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="65" y="230.17647058823528" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="end">60 dB</text>
+  <line x1="75" y1="160.2941176470588" x2="705" y2="160.2941176470588" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="65" y="164.2941176470588" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="end">80 dB</text>
+  <line x1="75" y1="94.41176470588236" x2="705" y2="94.41176470588236" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="65" y="98.41176470588236" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="end">100 dB</text>
+  <line x1="75.0" y1="45" x2="75.0" y2="325" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="75.0" y="343" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">0m</text>
+  <line x1="180.0" y1="45" x2="180.0" y2="325" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="180.0" y="343" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">100m</text>
+  <line x1="285.0" y1="45" x2="285.0" y2="325" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="285.0" y="343" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">200m</text>
+  <line x1="390.0" y1="45" x2="390.0" y2="325" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="390.0" y="343" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">300m</text>
+  <line x1="495.0" y1="45" x2="495.0" y2="325" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="495.0" y="343" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">400m</text>
+  <line x1="600.0" y1="45" x2="600.0" y2="325" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="600.0" y="343" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">500m</text>
+  <line x1="705.0" y1="45" x2="705.0" y2="325" stroke="#F1F5F9" stroke-width="1"/>
+  <text x="705.0" y="343" font-family="Inter, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">600m</text>
+
+  <polyline points="76.0,61.5 81.3,112.8 86.5,130.3 91.8,141.1 97.0,148.9 102.3,155.1 107.5,160.2 112.8,164.6 118.0,168.4 123.3,171.8 128.6,174.8 133.8,177.6 139.1,180.1 144.3,182.4 149.6,184.6 154.8,186.6 160.1,188.5 165.3,190.3 170.6,192.0 175.8,193.6 181.1,195.2 186.3,196.6 191.6,198.0 196.8,199.4 202.1,200.7 207.3,201.9 212.5,203.1 217.8,204.3 223.0,205.4 228.3,206.5 233.5,207.5 238.8,208.5 244.0,209.5 249.3,210.5 254.5,211.4 259.8,212.3 265.1,213.2 270.3,214.1 275.6,214.9 280.8,215.7 286.1,216.5 291.3,217.3 296.6,218.1 301.8,218.8 307.1,219.6 312.3,220.3 317.6,221.0 322.8,221.7 328.1,222.4 333.3,223.0 338.6,223.7 343.8,224.3 349.1,225.0 354.3,225.6 359.6,226.2 364.8,226.8 370.1,227.4 375.3,228.0 380.6,228.6 385.8,229.2 391.1,229.7 396.3,230.3 401.6,230.8 406.8,231.4 412.1,231.9 417.3,232.4 422.5,232.9 427.8,233.4 433.1,234.0 438.3,234.4 443.5,234.9 448.8,235.4 454.1,235.9 459.3,236.4 464.5,236.9 469.8,237.3 475.1,237.8 480.3,238.2 485.5,238.7 490.8,239.1 496.1,239.6 501.3,240.0 506.6,240.4 511.8,240.9 517.0,241.3 522.3,241.7 527.5,242.1 532.8,242.5 538.0,243.0 543.3,243.4 548.5,243.8 553.8,244.2 559.0,244.6 564.3,244.9 569.5,245.3 574.8,245.7 580.0,246.1 585.3,246.5 590.6,246.9 595.8,247.2 601.0,247.6 606.3,248.0 611.5,248.3 616.8,248.7 622.0,249.0 627.3,249.4 632.5,249.8 637.8,250.1 643.0,250.5 648.3,250.8 653.5,251.1 658.8,251.5 664.1,251.8 669.3,252.2 674.5,252.5 679.8,252.8 685.1,253.2 690.3,253.5 695.5,253.8 700.8,254.1" fill="none" stroke="#2E7D4F" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Siren source callout -->
+  <circle cx="76.05" cy="61.47058823529412" r="5" fill="#2E7D4F" />
+  <text x="86.05" y="55.47058823529412" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="700" fill="#2E7D4F">110 dB Siren Node (r = 1m)</text>
+
+  <!-- 500m overlap cluster label -->
+  <line x1="600.0" y1="45" x2="600.0" y2="325" stroke="#2E7D4F" stroke-width="1" stroke-dasharray="4,4"/>
+  <rect x="520.0" y="290" width="160" height="22" rx="3" fill="#DCFCE7" stroke="#BBF7D0"/>
+  <text x="600.0" y="305" font-family="JetBrains Mono, monospace" font-size="10" fill="#166534" font-weight="700" text-anchor="middle">500m Cluster Cell Boundary</text>
+
+  <text x="390.0" y="368" font-family="Inter, sans-serif" font-size="11.5" fill="#1E293B" font-weight="600" text-anchor="middle">Radial Distance from Siren Node (r, meters)</text>
+  <text transform="rotate(-90)" x="-185.0" y="24" font-family="Inter, sans-serif" font-size="11.5" fill="#1E293B" font-weight="600" text-anchor="middle">Sound Pressure Level (SPL, dB)</text>
+</svg>

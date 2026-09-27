@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 340" width="100%" height="auto">
+  <rect width="750" height="340" fill="#FFFFFF" rx="8" />
+
+  <!-- Title (font-size 18px to prevent truncation) -->
+  <text x="50" y="36" font-family="Barlow Condensed, sans-serif" font-size="18.5" font-weight="800" fill="#0F172A" text-transform="uppercase" letter-spacing="0.5">DETECTION-TO-ESCALATION PIPELINE LATENCY (LOG10 SCALE)</text>
+  <text x="50" y="56" font-family="Inter, sans-serif" font-size="12" fill="#64748B">Administrative manual forwarding chain vs. OcuLA autonomous edge closed loop</text>
+
+  <!-- Bar 1: Status Quo -->
+  <g transform="translate(50, 85)">
+    <text x="0" y="16" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#A13D3D">STATUS QUO (JULY 2024)</text>
+    <text x="650" y="16" font-family="Barlow Condensed, sans-serif" font-size="22" font-weight="800" fill="#A13D3D" text-anchor="end">13.5 Hours (48,600 s)</text>
+    
+    <rect x="0" y="26" width="650" height="32" rx="4" fill="#F1F5F9" stroke="#E2E8F0"/>
+    <rect x="0" y="26" width="608" height="32" rx="4" fill="#A13D3D"/>
+    <text x="595" y="47" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="end">Log10 = 4.69 (48,600 s)</text>
+    <text x="0" y="74" font-family="Inter, sans-serif" font-size="11" fill="#64748B">09:00 AM Hume alert forwarded into WhatsApp group → Inter-agency delay until 10:35 PM text</text>
+  </g>
+
+  <!-- Bar 2: OcuLA Target -->
+  <g transform="translate(50, 190)">
+    <text x="0" y="16" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#2E7D4F">OCULA AUTONOMOUS LOOP</text>
+    <text x="650" y="16" font-family="Barlow Condensed, sans-serif" font-size="22" font-weight="800" fill="#2E7D4F" text-anchor="end">&lt; 1.2 Seconds (560 ms typ.)</text>
+    
+    <rect x="0" y="26" width="650" height="32" rx="4" fill="#F1F5F9" stroke="#E2E8F0"/>
+    <rect x="0" y="26" width="22" height="32" rx="4" fill="#2E7D4F"/>
+    <text x="32" y="47" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#2E7D4F">Log10 = 0.08 (&lt; 1.2 s) • TinyML FFT (85ms) + LoRaWAN ToA (56.6ms) + Gateway Trip (200ms)</text>
+    <text x="0" y="74" font-family="Inter, sans-serif" font-size="11" fill="#64748B">Edge inference on ESP32-S3 directly actuates local 110 dB sirens without manual forwarding</text>
+  </g>
+
+  <!-- Speedup Callout -->
+  <g transform="translate(50, 290)">
+    <rect x="0" y="0" width="650" height="28" rx="4" fill="#F0FDF4" stroke="#BBF7D0" />
+    <text x="14" y="18" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#166534">SPEEDUP FACTOR: 40,500× FASTER (48,600s → 1.2s) • Eliminates 13.5-hour manual human handoff bottleneck</text>
+  </g>
+</svg>

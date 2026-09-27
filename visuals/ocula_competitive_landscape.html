@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OcuLA — Competitive Landscape: Cost & Architectural Capability Benchmark</title>
+<!-- Local deck font definitions -->
+<link rel="stylesheet" href="fonts.css">
+<!-- Web font fallbacks -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* STRICT DECK DESIGN SYSTEM:
+     - Pure White background (#FFFFFF), full bleed, generous whitespace, no borders/boxes
+     - Headline: Bold, black (#111111), grotesque/Helvetica-style sans-serif, ALL CAPS
+     - Subheading: smaller, medium-grey (#6B6B6B), regular weight
+     - Two-color palette only: near-black charcoal (#2B2B2B) for competitors, muted sage green (#5B8C6E) for OcuLA
+     - Gridlines: thin, light grey (#E0E0E0), horizontal only, minimal
+     - No gradients, no drop shadows, no 3D effects
+     - Footer: small grey (#999999) text row listing sources by number
+  */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html, body {
+    width: 2560px;
+    height: 1440px;
+    background-color: #FFFFFF;
+    color: #111111;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+  }
+
+  .canvas {
+    width: 2560px;
+    height: 1440px;
+    background: #FFFFFF;
+    padding: 68px 96px 44px 96px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  /* SLIDE HEADER */
+  .slide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .eyebrow-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .eyebrow-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #5B8C6E;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .eyebrow-divider {
+    color: #E0E0E0;
+    font-size: 14px;
+  }
+
+  .eyebrow-context {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #6B6B6B;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .slide-title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 46px;
+    font-weight: 900;
+    color: #111111;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    text-transform: uppercase;
+  }
+
+  .slide-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 19.5px;
+    font-weight: 400;
+    color: #6B6B6B;
+    margin-top: 2px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-top: 6px;
+  }
+
+  .legend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #2B2B2B;
+    letter-spacing: 0.04em;
+    padding: 6px 12px;
+  }
+
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+  }
+
+  .swatch-charcoal {
+    background-color: #2B2B2B;
+  }
+
+  .swatch-green {
+    background-color: #5B8C6E;
+  }
+
+  /* MAIN CONTENT: TWO-PANEL SPLIT */
+  .panels-container {
+    display: flex;
+    gap: 84px;
+    margin-top: 36px;
+    margin-bottom: auto;
+    align-items: stretch;
+  }
+
+  /* PANEL COMMON STYLES (No boxes, no borders) */
+  .panel-left {
+    flex: 0 0 940px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-heading-group {
+    margin-bottom: 22px;
+  }
+
+  .panel-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #6B6B6B;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .panel-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #111111;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  .panel-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #6B6B6B;
+    margin-top: 3px;
+  }
+
+  /* ======================================================================
+     PANEL A: LOG-SCALE BAR CHART
+     ====================================================================== */
+  .chart-wrapper {
+    position: relative;
+    width: 940px;
+    height: 740px;
+  }
+
+  .chart-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .panel-a-callout {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #E0E0E0;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .callout-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #5B8C6E;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: #F4F8F5;
+    padding: 3px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  .callout-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #555555;
+  }
+
+  /* ======================================================================
+     PANEL B: CAPABILITY MATRIX
+     ====================================================================== */
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+  }
+
+  .matrix-table th,
+  .matrix-table td {
+    padding: 23px 14px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .matrix-table th {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #2B2B2B;
+    border-bottom: 2px solid #111111;
+    padding-bottom: 16px;
+    letter-spacing: 0.01em;
+  }
+
+  .matrix-table th.col-capability {
+    text-align: left;
+    width: 370px;
+    padding-left: 0;
+    color: #6B6B6B;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .matrix-table th.col-ocula {
+    color: #5B8C6E;
+    font-weight: 800;
+    width: 210px;
+  }
+
+  .matrix-table tr {
+    border-bottom: 1px solid #E0E0E0;
+  }
+
+  .matrix-table tr:last-child {
+    border-bottom: 1px solid #E0E0E0;
+  }
+
+  .matrix-table td.cell-capability {
+    text-align: left;
+    padding-left: 0;
+  }
+
+  .cap-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 17.5px;
+    font-weight: 700;
+    color: #111111;
+    line-height: 1.25;
+  }
+
+  .cap-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 400;
+    color: #777777;
+    margin-top: 3px;
+    line-height: 1.35;
+  }
+
+  .matrix-table td.col-ocula {
+    background: rgba(91, 140, 110, 0.038);
+  }
+
+  .matrix-table th.col-ocula {
+    background: rgba(91, 140, 110, 0.038);
+  }
+
+  /* Glyph styles */
+  .glyph-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .glyph-check {
+    display: inline-block;
+  }
+
+  .glyph-dash {
+    display: inline-block;
+  }
+
+  .glyph-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #777777;
+    margin-top: 3px;
+  }
+
+  .glyph-desc-ocula {
+    color: #5B8C6E;
+    font-weight: 600;
+  }
+
+  /* ROADMAP TAG matching tech-stack diagram */
+  .tag-roadmap {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #FBEADA;
+    color: #B4590A;
+    border: 1px solid #F5D3B3;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 2.5px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .tag-roadmap-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #B4590A;
+  }
+
+  /* FOOTER ROW */
+  .slide-footer {
+    border-top: 1px solid #E0E0E0;
+    padding-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .footer-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #999999;
+    max-width: 2200px;
+  }
+
+  .footer-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #AAAAAA;
+    text-align: right;
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- ======================================================================
+       HEADER BLOCK
+       ====================================================================== -->
+  <header class="slide-header">
+    <div class="header-left">
+      <div class="eyebrow-row">
+        <span class="eyebrow-tag">SIH 2026 · TECHNICAL DECK</span>
+        <span class="eyebrow-divider">/</span>
+        <span class="eyebrow-context">COMPETITIVE ARCHITECTURAL BENCHMARK</span>
+      </div>
+      <h1 class="slide-title">COMPETITIVE LANDSCAPE: TRADITIONAL &amp; COMMERCIAL SENSING VS OCULA</h1>
+      <p class="slide-subtitle">Verified empirical cost and capability comparison against commercial, regulatory, and published academic architectures (sourced data, non-evaluative scoring).</p>
+    </div>
+    <div class="header-right">
+      <div class="legend-badge">
+        <span class="legend-swatch swatch-charcoal"></span>
+        <span>Existing Benchmarks</span>
+      </div>
+      <div class="legend-badge">
+        <span class="legend-swatch swatch-green"></span>
+        <span style="color: #5B8C6E; font-weight: 700;">OcuLA Architecture</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       MAIN CONTENT: TWO PANELS
+       ====================================================================== -->
+  <main class="panels-container">
+
+    <!-- PANEL A: COST PER SENSING POINT (LOG SCALE) -->
+    <section class="panel-left">
+      <div class="panel-heading-group">
+        <div class="panel-eyebrow">PANEL A · UNIT ECONOMICS</div>
+        <h2 class="panel-title">Cost per Sensing Point</h2>
+        <p class="panel-desc">Logarithmic scale (Base 10) · Hardware capital cost per deployed node in INR (₹)</p>
+      </div>
+
+      <div class="chart-wrapper">
+        <svg class="chart-svg" viewBox="0 0 940 730" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!--
+            Y scale mapping (600px span, 120px per decade):
+            log10(1,000) = 3.0  -> y = 630 (Baseline)
+            log10(10,000) = 4.0 -> y = 510 (dy = 120)
+            log10(100,000) = 5.0 -> y = 390
+            log10(1,000,000) = 6.0 -> y = 270
+            log10(10,000,000) = 7.0 -> y = 150
+            log10(100,000,000) = 8.0 -> y = 30 (Top gridline)
+          -->
+          <g class="gridlines">
+            <!-- y = 30 (₹10 Cr) -->
+            <line x1="75" y1="30" x2="930" y2="30" stroke="#E0E0E0" stroke-width="1"/>
+            <text x="65" y="34" font-family="'JetBrains Mono', monospace" font-size="12.5" font-weight="600" fill="#999999" text-anchor="end">₹10 Cr</text>
+
+            <!-- y = 150 (₹1 Cr) -->
+            <line x1="75" y1="150" x2="930" y2="150" stroke="#E0E0E0" stroke-width="1"/>
+            <text x="65" y="154" font-family="'JetBrains Mono', monospace" font-size="12.5" font-weight="600" fill="#999999" text-anchor="end">₹1 Cr</text>
+
+            <!-- y = 270 (₹10 L) -->
+            <line x1="75" y1="270" x2="930" y2="270" stroke="#E0E0E0" stroke-width="1"/>
+            <text x="65" y="274" font-family="'JetBrains Mono', monospace" font-size="12.5" font-weight="600" fill="#999999" text-anchor="end">₹10 L</text>
+
+            <!-- y = 390 (₹1 L) -->
+            <line x1="75" y1="390" x2="930" y2="390" stroke="#E0E0E0" stroke-width="1"/>
+            <text x="65" y="394" font-family="'JetBrains Mono', monospace" font-size="12.5" font-weight="600" fill="#999999" text-anchor="end">₹1 L</text>
+
+            <!-- y = 510 (₹10 K) -->
+            <line x1="75" y1="510" x2="930" y2="510" stroke="#E0E0E0" stroke-width="1"/>
+            <text x="65" y="514" font-family="'JetBrains Mono', monospace" font-size="12.5" font-weight="600" fill="#999999" text-anchor="end">₹10 K</text>
+
+            <!-- y = 630 (₹1 K Baseline) -->
+            <line x1="75" y1="630" x2="930" y2="630" stroke="#2B2B2B" stroke-width="1.8"/>
+            <text x="65" y="634" font-family="'JetBrains Mono', monospace" font-size="12.5" font-weight="700" fill="#2B2B2B" text-anchor="end">₹1 K</text>
+          </g>
+
+          <!-- BARS -->
+          <!--
+            Bar width = 86px
+            Bar 1: CPCB CAAQMS (₹1,75,00,000)
+                   log10(17500000) = 7.2430 -> height = 509.16px
+                   y_top = 630 - 509.16 = 120.84
+                   x = 115
+            Bar 2: Kaiterra Sensedge (₹1,20,000)
+                   log10(120000) = 5.0792 -> height = 249.50px
+                   y_top = 630 - 249.50 = 380.50
+                   x = 285
+            Bar 3: PurpleAir PA-II (₹21,000)
+                   log10(21000) = 4.3222 -> height = 158.67px
+                   y_top = 630 - 158.67 = 471.33
+                   x = 455
+            Bar 4: Academic ESP32+LoRa (₹3,800)
+                   log10(3800) = 3.5798 -> height = 69.57px
+                   y_top = 630 - 69.57 = 560.43
+                   x = 625
+            Bar 5: OcuLA (₹4,000)
+                   log10(4000) = 3.6021 -> height = 72.25px
+                   y_top = 630 - 72.25 = 557.75
+                   x = 795
+          -->
+
+          <!-- BAR 1: CPCB CAAQMS -->
+          <g class="bar-group">
+            <rect x="115" y="120.8" width="86" height="509.2" fill="#2B2B2B" rx="3" />
+            <!-- Cost Label above bar -->
+            <text x="158" y="104" font-family="'Inter', sans-serif" font-size="17" font-weight="800" fill="#111111" text-anchor="middle">₹1,75,00,000</text>
+            <!-- X-Axis Label -->
+            <text x="158" y="658" font-family="'Inter', sans-serif" font-size="15.5" font-weight="700" fill="#111111" text-anchor="middle">CPCB CAAQMS</text>
+            <text x="158" y="678" font-family="'Inter', sans-serif" font-size="13" font-weight="500" fill="#6B6B6B" text-anchor="middle">Station Tender [1]</text>
+            <text x="158" y="698" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="600" fill="#999999" text-anchor="middle">REGULATORY</text>
+          </g>
+
+          <!-- BAR 2: Kaiterra Sensedge -->
+          <g class="bar-group">
+            <rect x="285" y="380.5" width="86" height="249.5" fill="#2B2B2B" rx="3" />
+            <!-- Cost Label above bar -->
+            <text x="328" y="364" font-family="'Inter', sans-serif" font-size="17" font-weight="800" fill="#111111" text-anchor="middle">₹1,20,000</text>
+            <!-- X-Axis Label -->
+            <text x="328" y="658" font-family="'Inter', sans-serif" font-size="15.5" font-weight="700" fill="#111111" text-anchor="middle">Kaiterra Sensedge</text>
+            <text x="328" y="678" font-family="'Inter', sans-serif" font-size="13" font-weight="500" fill="#6B6B6B" text-anchor="middle">Commercial Env [2]</text>
+            <text x="328" y="698" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="600" fill="#999999" text-anchor="middle">ENTERPRISE</text>
+          </g>
+
+          <!-- BAR 3: PurpleAir PA-II -->
+          <g class="bar-group">
+            <rect x="455" y="471.3" width="86" height="158.7" fill="#2B2B2B" rx="3" />
+            <!-- Cost Label above bar -->
+            <text x="498" y="455" font-family="'Inter', sans-serif" font-size="17" font-weight="800" fill="#111111" text-anchor="middle">₹21,000</text>
+            <!-- X-Axis Label -->
+            <text x="498" y="658" font-family="'Inter', sans-serif" font-size="15.5" font-weight="700" fill="#111111" text-anchor="middle">PurpleAir PA-II</text>
+            <text x="498" y="678" font-family="'Inter', sans-serif" font-size="13" font-weight="500" fill="#6B6B6B" text-anchor="middle">Citizen Science [3]</text>
+            <text x="498" y="698" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="600" fill="#999999" text-anchor="middle">COMMERCIAL CROWD</text>
+          </g>
+
+          <!-- BRACKET / CALLOUT ENCLOSING BARS 4 & 5 (Comparable cost tier) -->
+          <path d="M 625,528 L 625,514 L 881,514 L 881,528" stroke="#5B8C6E" stroke-width="1.4" stroke-dasharray="3.5 3.5" fill="none" />
+          <text x="753" y="504" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="700" fill="#5B8C6E" text-anchor="middle" letter-spacing="0.06em">COMPARABLE COST TIER (~₹4K)</text>
+
+          <!-- BAR 4: Academic ESP32+LoRa -->
+          <g class="bar-group">
+            <rect x="625" y="560.4" width="86" height="69.6" fill="#2B2B2B" rx="3" />
+            <!-- Cost Label above bar -->
+            <text x="668" y="546" font-family="'Inter', sans-serif" font-size="17" font-weight="800" fill="#111111" text-anchor="middle">₹3,800</text>
+            <!-- X-Axis Label -->
+            <text x="668" y="658" font-family="'Inter', sans-serif" font-size="15.5" font-weight="700" fill="#111111" text-anchor="middle">Academic ESP32</text>
+            <text x="668" y="678" font-family="'Inter', sans-serif" font-size="13" font-weight="500" fill="#6B6B6B" text-anchor="middle">Published LoRa [4]</text>
+            <text x="668" y="698" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="600" fill="#999999" text-anchor="middle">RESEARCH LAB</text>
+          </g>
+
+          <!-- BAR 5: OcuLA -->
+          <g class="bar-group">
+            <rect x="795" y="557.8" width="86" height="72.2" fill="#5B8C6E" rx="3" />
+            <!-- Cost Label above bar -->
+            <text x="838" y="544" font-family="'Inter', sans-serif" font-size="17.5" font-weight="900" fill="#5B8C6E" text-anchor="middle">₹4,000</text>
+            <!-- X-Axis Label -->
+            <text x="838" y="658" font-family="'Inter', sans-serif" font-size="16" font-weight="900" fill="#5B8C6E" text-anchor="middle">OcuLA</text>
+            <text x="838" y="678" font-family="'Inter', sans-serif" font-size="13" font-weight="600" fill="#5B8C6E" text-anchor="middle">Hardware BOM [5]</text>
+            <text x="838" y="698" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="700" fill="#5B8C6E" text-anchor="middle">MULTI-HAZARD</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Callout note beneath chart -->
+      <div class="panel-a-callout">
+        <span class="callout-pill">HONEST AUDIT</span>
+        <p class="callout-text">
+          OcuLA does not claim to be the absolute cheapest node; it sits in the identical sub-₹5,000 order of magnitude as published academic prototypes (₹4,000 vs ₹3,800), while delivering multi-hazard detection, offline operation, and hardware tamper-evidence absent in low-cost peers.
+        </p>
+      </div>
+    </section>
+
+    <!-- PANEL B: CAPABILITY MATRIX -->
+    <section class="panel-right">
+      <div class="panel-heading-group">
+        <div class="panel-eyebrow">PANEL B · ARCHITECTURAL CAPABILITY MATRIX</div>
+        <h2 class="panel-title">System Capabilities &amp; Resilience Profiles</h2>
+        <p class="panel-desc">Verified architectural features across deployment tiers (binary verification + roadmap tracking)</p>
+      </div>
+
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th class="col-capability">Capability / Feature</th>
+            <th>CPCB CAAQMS<br><span style="font-size: 11.5px; font-weight: 500; color: #777;">[1]</span></th>
+            <th>Kaiterra<br><span style="font-size: 11.5px; font-weight: 500; color: #777;">[2]</span></th>
+            <th>PurpleAir<br><span style="font-size: 11.5px; font-weight: 500; color: #777;">[3]</span></th>
+            <th>Academic<br><span style="font-size: 11.5px; font-weight: 500; color: #777;">[4]</span></th>
+            <th class="col-ocula">OcuLA<br><span style="font-size: 11.5px; font-weight: 600; color: #5B8C6E;">[5]</span></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- ROW 1: Hazard scope (multi vs single) -->
+          <tr>
+            <td class="cell-capability">
+              <div class="cap-name">Hazard scope (multi vs single)</div>
+              <div class="cap-sub">Simultaneous detection: toxic gas, water/flood, flame, temp &amp; humidity</div>
+            </td>
+            <!-- CPCB -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Single (Air)</span>
+              </div>
+            </td>
+            <!-- Kaiterra -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Single (Air)</span>
+              </div>
+            </td>
+            <!-- PurpleAir -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Single (PM)</span>
+              </div>
+            </td>
+            <!-- Academic ESP32 -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Single (Env)</span>
+              </div>
+            </td>
+            <!-- OcuLA (YES - Multi-hazard) -->
+            <td class="col-ocula">
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#5B8C6E"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc glyph-desc-ocula">Multi-Hazard</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 2: Works fully offline -->
+          <tr>
+            <td class="cell-capability">
+              <div class="cap-name">Works fully offline</div>
+              <div class="cap-sub">Autonomous sensing and alerting with zero cloud or cellular dependencies</div>
+            </td>
+            <!-- CPCB -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Cloud dependent</span>
+              </div>
+            </td>
+            <!-- Kaiterra -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Cloud dependent</span>
+              </div>
+            </td>
+            <!-- PurpleAir -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">WiFi/Cloud link</span>
+              </div>
+            </td>
+            <!-- Academic ESP32 (YES) -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#2B2B2B"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc">LoRa P2P offline</span>
+              </div>
+            </td>
+            <!-- OcuLA (YES - Mesh/Autonomous) -->
+            <td class="col-ocula">
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#5B8C6E"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc glyph-desc-ocula">Edge Autonomous</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 3: Off-grid solar power -->
+          <tr>
+            <td class="cell-capability">
+              <div class="cap-name">Off-grid solar power</div>
+              <div class="cap-sub">Sustained off-grid energy harvesting without external AC power supply</div>
+            </td>
+            <!-- CPCB -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Grid + Diesel kW</span>
+              </div>
+            </td>
+            <!-- Kaiterra -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Mains / PoE DC</span>
+              </div>
+            </td>
+            <!-- PurpleAir -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">5V Wall adapter</span>
+              </div>
+            </td>
+            <!-- Academic ESP32 (YES) -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#2B2B2B"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc">Solar + 18650</span>
+              </div>
+            </td>
+            <!-- OcuLA (YES - Solar rail) -->
+            <td class="col-ocula">
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#5B8C6E"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc glyph-desc-ocula">Solar harvesting</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 4: Tamper-evident data -->
+          <tr>
+            <td class="cell-capability">
+              <div class="cap-name">Tamper-evident data</div>
+              <div class="cap-sub">Continuous hardware-level cryptographic hash-chaining prevents retroactive alteration</div>
+            </td>
+            <!-- CPCB -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Plain telemetry</span>
+              </div>
+            </td>
+            <!-- Kaiterra -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Proprietary API</span>
+              </div>
+            </td>
+            <!-- PurpleAir -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Unsigned HTTP</span>
+              </div>
+            </td>
+            <!-- Academic ESP32 -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Raw LoRa PHY</span>
+              </div>
+            </td>
+            <!-- OcuLA (YES - Local Hash Chain) -->
+            <td class="col-ocula">
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#5B8C6E"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc glyph-desc-ocula">Local Hash Chain</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 5: Sub-second local alerting -->
+          <tr>
+            <td class="cell-capability">
+              <div class="cap-name">Sub-second local alerting</div>
+              <div class="cap-sub">On-device audible buzzer &amp; visual alarm triggered directly upon threshold breach</div>
+            </td>
+            <!-- CPCB -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">15m–1h avg loop</span>
+              </div>
+            </td>
+            <!-- Kaiterra -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Display only</span>
+              </div>
+            </td>
+            <!-- PurpleAir -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">80s–120s polling</span>
+              </div>
+            </td>
+            <!-- Academic ESP32 -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">5m–15m sleep cycle</span>
+              </div>
+            </td>
+            <!-- OcuLA (YES - <1s Loop) -->
+            <td class="col-ocula">
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#5B8C6E"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc glyph-desc-ocula">&lt;1 sec local trip</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 6: Deployment maturity (HONEST GAP: OcuLA is ROADMAP, not Live!) -->
+          <tr>
+            <td class="cell-capability">
+              <div class="cap-name">Deployment maturity</div>
+              <div class="cap-sub">Active field-pilot validation and multi-site operational track record</div>
+            </td>
+            <!-- CPCB (YES - 562+ stations) -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#2B2B2B"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc">562+ Stations</span>
+              </div>
+            </td>
+            <!-- Kaiterra (YES - Commercial) -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#2B2B2B"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc">Commercial Global</span>
+              </div>
+            </td>
+            <!-- PurpleAir (YES - Global Network) -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" fill="#2B2B2B"/>
+                  <polyline points="8,13 11.5,16.5 18.5,9.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="glyph-desc">Global Crowd</span>
+              </div>
+            </td>
+            <!-- Academic ESP32 (NO - Lab paper only) -->
+            <td>
+              <div class="glyph-container">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <line x1="5" y1="13" x2="21" y2="13" stroke="#CCCCCC" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="glyph-desc">Lab prototype</span>
+              </div>
+            </td>
+            <!-- OcuLA (HONEST WEAKEST: Half-filled glyph + ROADMAP tag) -->
+            <td class="col-ocula">
+              <div class="glyph-container">
+                <!-- Half-filled glyph: left half filled sage green, right half open -->
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <circle cx="13" cy="13" r="11.5" stroke="#5B8C6E" stroke-width="2.2" fill="#FFFFFF"/>
+                  <path d="M 13,1.5 A 11.5,11.5 0 0,0 13,24.5 Z" fill="#5B8C6E"/>
+                </svg>
+                <span class="tag-roadmap">
+                  <span class="tag-roadmap-dot"></span>
+                  ROADMAP
+                </span>
+                <span class="glyph-desc" style="color: #B4590A; font-weight: 600; font-size: 11.5px;">Bench tested</span>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================
+       FOOTER BLOCK: CITED SOURCES
+       ====================================================================== -->
+  <footer class="slide-footer">
+    <p class="footer-text">
+      <strong>Sources &amp; Methodology:</strong>
+      [1] CPCB / Karnataka SPCB public tender for CAAQMS station, Mysuru (Deccan Herald; typical CAAQMS unit cost ₹1.5–1.75 Cr).
+      [2] Kaiterra Sensedge enterprise commercial pricing ($1,290–$1,490 list + Indian customs duty &amp; GST, kaiterra.com).
+      [3] PurpleAir PA-II retail import pricing ($279 USD list + freight &amp; duties, purpleair.com).
+      [4] Published peer-reviewed ESP32+LoRa IoT environmental nodes (IEEE Sensors Journal / MDPI Sensors, prototype hardware BOM ~₹3,800).
+      [5] OcuLA engineering hardware bill-of-materials (ESP32-S3, multi-sensor cluster, OLED, buzzer, solar charge controller; bench-tested prototype; field-pilot network is on development roadmap).
+    </p>
+    <div class="footer-meta">
+      SLIDE 5 COMPANION · 16:9 PROPORTIONS
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>

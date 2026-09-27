@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Visual C — The Race Against the Clock (Synchronized Countdown)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; border: none; outline: none; }
+  html, body {
+    width: 1200px; height: 900px; background-color: #FFFFFF; color: #111111;
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+  }
+  .canvas {
+    width: 1200px; height: 900px; background: #FFFFFF;
+    padding: 26px 36px 20px 36px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  /* HEADER */
+  .slide-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .header-left { display: flex; flex-direction: column; gap: 2px; }
+  .eyebrow-row { display: flex; align-items: center; gap: 10px; }
+  .eyebrow-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; color: #4A7A5B; background: #EDF4EE;
+    padding: 2px 7px; border-radius: 4px;
+  }
+  .eyebrow-context {
+    font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: uppercase; color: #666666;
+  }
+  .slide-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; color: #111111; line-height: 1.1;
+  }
+  .slide-subtitle { font-family: 'Inter', sans-serif; font-size: 13px; color: #666666; }
+
+  /* COUNTDOWN GRID */
+  .countdown-container { display: flex; flex-direction: column; gap: 10px; margin: 6px 0; }
+
+  .countdown-row {
+    background: #FAFBF9; border: 1px solid #E6ECE7; border-radius: 6px;
+    padding: 10px 16px; display: grid; grid-template-columns: 110px 1fr 1fr;
+    gap: 16px; align-items: center;
+  }
+  .countdown-row.critical {
+    background: #FDFEFC; border: 1.5px solid #4A7A5B;
+  }
+  .countdown-row.strike {
+    background: #FFFBFB; border: 1.5px solid #F5C6CB;
+  }
+
+  .time-col { display: flex; flex-direction: column; gap: 1px; }
+  .t-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800;
+  }
+  .t-badge.normal { color: #555555; }
+  .t-badge.ocula { color: #4A7A5B; }
+  .t-badge.strike { color: #A13D3D; }
+  .t-sub { font-family: 'Inter', sans-serif; font-size: 10.5px; color: #888888; }
+
+  .state-col {
+    display: flex; flex-direction: column; gap: 2px; padding: 6px 12px;
+    border-radius: 4px; background: #FFFFFF; border: 1px solid #EEEEEE;
+  }
+  .state-col.reality { border-left: 4px solid #2D2D2D; }
+  .state-col.reality-fatal { border-left: 4px solid #A13D3D; background: #FFF5F5; }
+  .state-col.ocula { border-left: 4px solid #4A7A5B; }
+  .state-col.ocula-active { border-left: 4px solid #2E7D32; background: #F2F9F3; }
+
+  .state-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .state-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800;
+    text-transform: uppercase; color: #111111;
+  }
+  .state-title.alert { color: #A13D3D; }
+  .state-title.ocula { color: #2E7D32; }
+  .state-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  }
+  .state-status.grey { color: #777777; }
+  .state-status.alert { color: #A13D3D; }
+  .state-status.green { color: #4A7A5B; }
+  .state-desc {
+    font-family: 'Inter', sans-serif; font-size: 11px; color: #555555; line-height: 1.25;
+  }
+
+  /* BOTTOM KPI STRIP */
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  }
+  .kpi-card {
+    background: #FAFBF9; border: 1px solid #E5EBE6; border-radius: 5px;
+    padding: 8px 12px; display: flex; flex-direction: column; gap: 1px;
+  }
+  .kpi-label {
+    font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; color: #666666;
+  }
+  .kpi-num {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800;
+    color: #4A7A5B; line-height: 1.1;
+  }
+  .kpi-sub { font-family: 'Inter', sans-serif; font-size: 10px; color: #777777; }
+
+  /* FOOTER */
+  .slide-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid #EEEEEE; padding-top: 6px; font-size: 9.5px;
+    color: #888888; font-family: 'Inter', sans-serif;
+  }
+  .footer-tag { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #777777; }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- HEADER -->
+  <div class="slide-header">
+    <div class="header-left">
+      <div class="eyebrow-row">
+        <span class="eyebrow-tag">Visual C: Countdown Timeline</span>
+        <span class="eyebrow-context">Smart India Hackathon 2026 &bull; PS 26178 &bull; 4:3 Slide Inset</span>
+      </div>
+      <div class="slide-title">Wayanad 2024: The Countdown to Collapse</div>
+      <div class="slide-subtitle">Synchronized 17-hour countdown to 02:00 AM landslide: Bureaucratic inertia vs. Edge-AI intervention</div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN GRID -->
+  <div class="countdown-container">
+
+    <!-- ROW 1: T - 17h -->
+    <div class="countdown-row">
+      <div class="time-col">
+        <span class="t-badge normal">T &minus; 17h</span>
+        <span class="t-sub">09:00 AM Jul 29</span>
+      </div>
+      <div class="state-col reality">
+        <div class="state-header">
+          <span class="state-title">Hume Alert Issued</span>
+          <span class="state-status grey">WhatsApp Group</span>
+        </div>
+        <span class="state-desc">NGO warns of 600mm/48h threshold crossing; message sits in collectorate group.</span>
+      </div>
+      <div class="state-col ocula">
+        <div class="state-header">
+          <span class="state-title ocula">Mesh Ingests Rain</span>
+          <span class="state-status green">Continuous Sync</span>
+        </div>
+        <span class="state-desc">15 child rain probes record >15mm/h; Parent Node begins spatial Kriging model.</span>
+      </div>
+    </div>
+
+    <!-- ROW 2: T - 8h -->
+    <div class="countdown-row">
+      <div class="time-col">
+        <span class="t-badge normal">T &minus; 8h</span>
+        <span class="t-sub">06:00 PM Jul 29</span>
+      </div>
+      <div class="state-col reality">
+        <div class="state-header">
+          <span class="state-title">Administrative Silence</span>
+          <span class="state-status grey">No Escalation</span>
+        </div>
+        <span class="state-desc">Bureaucracy deliberates. Daylight ends; zero public advisories delivered to villages.</span>
+      </div>
+      <div class="state-col ocula">
+        <div class="state-header">
+          <span class="state-title ocula">Saturation Alert</span>
+          <span class="state-status green">Sr &ge; 0.98 Threshold</span>
+        </div>
+        <span class="state-desc">Soil saturation breaches critical limit; automated daytime Yellow Advisory issued.</span>
+      </div>
+    </div>
+
+    <!-- ROW 3: T - 3.5h -->
+    <div class="countdown-row">
+      <div class="time-col">
+        <span class="t-badge normal">T &minus; 3.5h</span>
+        <span class="t-sub">10:35 PM Jul 29</span>
+      </div>
+      <div class="state-col reality">
+        <div class="state-header">
+          <span class="state-title">Passive Midnight SMS</span>
+          <span class="state-status alert">0 dB Audibility</span>
+        </div>
+        <span class="state-desc">District text sent late night while residents sleep; no sirens, no evacuation order.</span>
+      </div>
+      <div class="state-col ocula">
+        <div class="state-header">
+          <span class="state-title ocula">Vibration Armed</span>
+          <span class="state-status green">FFT Baseline Locked</span>
+        </div>
+        <span class="state-desc">ADXL345 sensors enter high-sensitivity monitoring across upstream slope bedrock.</span>
+      </div>
+    </div>
+
+    <!-- ROW 4: T - 22m (CRITICAL TRIGGER) -->
+    <div class="countdown-row critical">
+      <div class="time-col">
+        <span class="t-badge ocula">T &minus; 22m</span>
+        <span class="t-sub">01:38 AM Jul 30</span>
+      </div>
+      <div class="state-col reality">
+        <div class="state-header">
+          <span class="state-title alert">Zero Warning</span>
+          <span class="state-status alert">Villagers Asleep</span>
+        </div>
+        <span class="state-desc">Residents completely unaware in dark; zero acoustic sirens in Mundakkai.</span>
+      </div>
+      <div class="state-col ocula-active">
+        <div class="state-header">
+          <span class="state-title ocula">110 dB Sirens Fired</span>
+          <span class="state-status green">&lt; 1.2s Actuation</span>
+        </div>
+        <span class="state-desc">ADXL345 detects 8-18 Hz shear tremors; ESP32 TinyML triggers sirens 22m early.</span>
+      </div>
+    </div>
+
+    <!-- ROW 5: T = 0 (STRIKE) -->
+    <div class="countdown-row strike">
+      <div class="time-col">
+        <span class="t-badge strike">T = 0</span>
+        <span class="t-sub">02:00 AM Jul 30</span>
+      </div>
+      <div class="state-col reality-fatal">
+        <div class="state-header">
+          <span class="state-title alert">298 Dead (Fatal Strike)</span>
+          <span class="state-status alert">-2.6 min Deficit</span>
+        </div>
+        <span class="state-desc">Debris washes Punchirimattom &amp; Mundakkai. IMD Red Alert comes at 06:00 AM (+4h late).</span>
+      </div>
+      <div class="state-col ocula-active">
+        <div class="state-header">
+          <span class="state-title ocula">Safe on Terrace</span>
+          <span class="state-status green">+19.4m Buffer</span>
+        </div>
+        <span class="state-desc">Villagers completed 2.6m lateral exit 18m prior. Merkle ledger logs audit records.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM KPI STRIP -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <span class="kpi-label">Handoff Speedup</span>
+      <span class="kpi-num">40,500&times;</span>
+      <span class="kpi-sub">13.5 hrs &rarr; 1.2s</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Acoustic Audibility</span>
+      <span class="kpi-num">110 dB</span>
+      <span class="kpi-sub">vs. 0 dB silent text</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Evacuation Margin</span>
+      <span class="kpi-num">+19.4 Mins</span>
+      <span class="kpi-sub">8.4x safety buffer</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Hardware Cost</span>
+      <span class="kpi-num">₹60,000</span>
+      <span class="kpi-sub">1 Parent + 15 Child</span>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="slide-footer">
+    <span><strong>Sources:</strong> GSI 2024 Wayanad Report; NCESS Debris Flow Velocity (16 m/s); Onmanorama official toll (298 dead); Voellmy-Salm runout model.</span>
+    <span class="footer-tag">OCULA &bull; SIH 2026 &bull; PS 26178</span>
+  </div>
+
+</div>
+</body>
+</html>

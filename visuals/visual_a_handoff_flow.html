@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Visual A — The Broken Handoff vs Automated Closed Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; border: none; outline: none; }
+  html, body {
+    width: 1200px; height: 900px; background-color: #FFFFFF; color: #111111;
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+  }
+  .canvas {
+    width: 1200px; height: 900px; background: #FFFFFF;
+    padding: 26px 36px 20px 36px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  /* HEADER */
+  .slide-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .header-left { display: flex; flex-direction: column; gap: 2px; }
+  .eyebrow-row { display: flex; align-items: center; gap: 10px; }
+  .eyebrow-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; color: #4A7A5B; background: #EDF4EE;
+    padding: 2px 7px; border-radius: 4px;
+  }
+  .eyebrow-context {
+    font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: uppercase; color: #666666;
+  }
+  .slide-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; color: #111111; line-height: 1.1;
+  }
+  .slide-subtitle { font-family: 'Inter', sans-serif; font-size: 13px; color: #666666; }
+
+  /* FLOW CONTAINER */
+  .flow-container { display: flex; flex-direction: column; gap: 16px; margin: 6px 0; }
+
+  .lane-block {
+    border-radius: 6px; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .lane-block.reality {
+    background: #FAFAFA; border: 1px solid #E5E5E5; border-left: 6px solid #2D2D2D;
+  }
+  .lane-block.ocula {
+    background: #F8FAF8; border: 1px solid #DDEBE0; border-left: 6px solid #4A7A5B;
+  }
+  .lane-header { display: flex; justify-content: space-between; align-items: center; }
+  .lane-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .lane-title.reality { color: #2D2D2D; }
+  .lane-title.ocula { color: #4A7A5B; }
+  .lane-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 3px;
+  }
+  .lane-badge.reality { background: #FDE8E8; color: #A13D3D; }
+  .lane-badge.ocula { background: #E1EFE4; color: #2E7D32; }
+
+  /* STEPS ROW */
+  .steps-row {
+    display: grid; grid-template-columns: 1fr auto 1fr auto 1.3fr auto 1fr auto 1.2fr;
+    align-items: center; gap: 6px;
+  }
+  .step-node {
+    background: #FFFFFF; border-radius: 5px; padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 3px; height: 112px; justify-content: flex-start;
+  }
+  .step-node.reality { border: 1px solid #E0E0E0; }
+  .step-node.ocula { border: 1px solid #D6E5D9; }
+  .step-node.alert-node { border: 1.5px solid #F5C6CB; background: #FFF5F5; }
+  .step-node.success-node { border: 1.5px solid #C8E6C9; background: #F2F9F3; }
+
+  .s-time {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    color: #888888;
+  }
+  .s-time.alert { color: #A13D3D; }
+  .s-time.ocula { color: #4A7A5B; }
+  .s-name {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800;
+    text-transform: uppercase; line-height: 1.1; color: #111111;
+  }
+  .s-name.alert { color: #A13D3D; }
+  .s-name.ocula { color: #2E7D32; }
+  .s-desc {
+    font-family: 'Inter', sans-serif; font-size: 10.5px; color: #555555; line-height: 1.25;
+  }
+  .flow-arrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700;
+    color: #BBBBBB; display: flex; align-items: center; justify-content: center;
+  }
+  .flow-arrow.reality { color: #888888; }
+  .flow-arrow.ocula { color: #4A7A5B; }
+
+  /* MATH & RECEIPT BANNER */
+  .math-receipt-row {
+    display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-top: 4px;
+  }
+  .box-card {
+    background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px;
+    padding: 10px 14px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .box-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; color: #2D2D2D;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .box-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    color: #4A7A5B; background: #EDF4EE; padding: 2px 6px; border-radius: 3px;
+  }
+  .math-formula {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    color: #2D2D2D; background: #F8FAF8; padding: 4px 8px; border-radius: 4px;
+  }
+  .box-desc { font-family: 'Inter', sans-serif; font-size: 11px; color: #444444; line-height: 1.3; }
+
+  /* FOOTER */
+  .slide-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid #EEEEEE; padding-top: 6px; font-size: 9.5px;
+    color: #888888; font-family: 'Inter', sans-serif;
+  }
+  .footer-tag { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #777777; }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- HEADER -->
+  <div class="slide-header">
+    <div class="header-left">
+      <div class="eyebrow-row">
+        <span class="eyebrow-tag">Visual A: Protocol Architecture</span>
+        <span class="eyebrow-context">Smart India Hackathon 2026 &bull; PS 26178 &bull; 4:3 Slide Inset</span>
+      </div>
+      <div class="slide-title">Wayanad 2024: The Handoff Failure vs. OcuLA Closed Loop</div>
+      <div class="slide-subtitle">Hyperlocal detection already existed in 2024 &mdash; the catastrophic failure occurred at the administrative handoff</div>
+    </div>
+  </div>
+
+  <!-- FLOW CONTAINER -->
+  <div class="flow-container">
+
+    <!-- LANE 1: ACTUAL REALITY -->
+    <div class="lane-block reality">
+      <div class="lane-header">
+        <span class="lane-title reality">Track A: Actual Reality (The Broken Handoff Chain)</span>
+        <span class="lane-badge reality">FATAL DEFICIT: 298 DEAD &bull; 0s SIREN LEAD TIME</span>
+      </div>
+      <div class="steps-row">
+        <!-- Step 1 -->
+        <div class="step-node reality">
+          <span class="s-time">09:00 AM &bull; Jul 29</span>
+          <span class="s-name">Hume Rain Gauges</span>
+          <span class="s-desc">NGO network predicts 600mm/48h threshold crossing.</span>
+        </div>
+        <div class="flow-arrow reality">&rarr;</div>
+        <!-- Step 2 -->
+        <div class="step-node reality">
+          <span class="s-time">09:15 AM &bull; Jul 29</span>
+          <span class="s-name">WhatsApp Alert</span>
+          <span class="s-desc">Sent to informal group with Collectorate staff.</span>
+        </div>
+        <div class="flow-arrow reality">&rarr;</div>
+        <!-- Step 3 -->
+        <div class="step-node alert-node">
+          <span class="s-time alert">13.5-HR DELAY</span>
+          <span class="s-name alert">Bureaucratic Void</span>
+          <span class="s-desc">No automated pipeline; manual administrative review.</span>
+        </div>
+        <div class="flow-arrow reality">&rarr;</div>
+        <!-- Step 4 -->
+        <div class="step-node reality">
+          <span class="s-time">10:35 PM &bull; Jul 29</span>
+          <span class="s-name">Passive Text</span>
+          <span class="s-desc">SMS sent late night; 0 dB audibility to sleeping homes.</span>
+        </div>
+        <div class="flow-arrow reality">&rarr;</div>
+        <!-- Step 5 -->
+        <div class="step-node alert-node">
+          <span class="s-time alert">~02:00 AM &bull; Jul 30</span>
+          <span class="s-name alert">Landslide Strikes</span>
+          <span class="s-desc">298 dead. IMD Red Alert issued at 06:00 AM (+4h late).</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LANE 2: OCULA DEPLOYMENT -->
+    <div class="lane-block ocula">
+      <div class="lane-header">
+        <span class="lane-title ocula">Track B: With 1 OcuLA Cluster (Autonomous Star-Mesh)</span>
+        <span class="lane-badge ocula">+19.4 MIN SAFETY MARGIN &bull; 100% LATERAL EVACUATION</span>
+      </div>
+      <div class="steps-row">
+        <!-- Step 1 -->
+        <div class="step-node ocula">
+          <span class="s-time ocula">Continuous Edge</span>
+          <span class="s-name ocula">15 Child Nodes</span>
+          <span class="s-desc">ADXL345 vibration + rain/pore probes on slopes.</span>
+        </div>
+        <div class="flow-arrow ocula">&rarr;</div>
+        <!-- Step 2 -->
+        <div class="step-node ocula">
+          <span class="s-time ocula">&lt; 1.2s Uplink</span>
+          <span class="s-name ocula">LoRa Star-Mesh</span>
+          <span class="s-desc">868 MHz unlicensed packet (56ms ToA, 100% off-grid).</span>
+        </div>
+        <div class="flow-arrow ocula">&rarr;</div>
+        <!-- Step 3 -->
+        <div class="step-node success-node">
+          <span class="s-time ocula">&lt; 250ms Compute</span>
+          <span class="s-name ocula">Parent Node Edge AI</span>
+          <span class="s-desc">Kriging + CUSUM triggers automated closed-loop escalation.</span>
+        </div>
+        <div class="flow-arrow ocula">&rarr;</div>
+        <!-- Step 4 -->
+        <div class="step-node success-node">
+          <span class="s-time ocula">01:38 AM (+22 min)</span>
+          <span class="s-name ocula">110 dB Sirens</span>
+          <span class="s-desc">Seismic micro-tremors awaken Mundakkai offline.</span>
+        </div>
+        <div class="flow-arrow ocula">&rarr;</div>
+        <!-- Step 5 -->
+        <div class="step-node success-node">
+          <span class="s-time ocula">01:41 AM (Cleared)</span>
+          <span class="s-name ocula">Safe Terrace</span>
+          <span class="s-desc">Villagers clear 75m in 2.6 mins, beating surge by >18m.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MATH & RECEIPT BANNER -->
+  <div class="math-receipt-row">
+    <div class="box-card">
+      <div class="box-title">
+        <span>The Evacuation Physics Equation</span>
+        <span class="box-tag">8.4&times; Safety Factor</span>
+      </div>
+      <div class="math-formula">t_clear = 90s (wake + react) + [75m lateral / 1.1 m/s walk] = 158s (2.6 min)</div>
+      <div class="box-desc">
+        Residents needed 2.6 mins to exit the 150m riverbed corridor. OcuLA's 22-min seismic precursor provides a <strong>+19.4 minute life-safety buffer</strong>. Reality delivered 0s.
+      </div>
+    </div>
+    <div class="box-card">
+      <div class="box-title">
+        <span>Infrastructure Independence Receipts</span>
+        <span class="box-tag">100% Off-Grid</span>
+      </div>
+      <div class="box-desc">
+        Grid/cellular networks fail in storms: <strong>Amphan (70% towers down)</strong>, <strong>Michaung (generator diesel freeze)</strong>, <strong>J&amp;K (24h blackout)</strong>. OcuLA runs on solar + LoRa without telecom.
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="slide-footer">
+    <span><strong>Sources:</strong> GSI 2024 Wayanad Report; NCESS Debris Survey; Onmanorama official toll (298 dead); DoT Disaster Reports (Amphan/Michaung).</span>
+    <span class="footer-tag">OCULA &bull; SIH 2026 &bull; PS 26178</span>
+  </div>
+
+</div>
+</body>
+</html>
