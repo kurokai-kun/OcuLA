@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
+        { "key": "Permissions-Policy", "value": "geolocation=(self), microphone=()" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/audit", "destination": "/ocula-audit-hub/index.html" },
+    { "source": "/audit/(.*)", "destination": "/ocula-audit-hub/$1" },
+    { "source": "/ocula-audit-hub", "destination": "/ocula-audit-hub/index.html" },
+    { "source": "/ocula-audit-hub/(.*)", "destination": "/ocula-audit-hub/$1" },
+    { "source": "/(.*)", "destination": "/ocula-web-app/$1" }
+  ]
+}

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCULA Audit Hub — Master Access & Activity Tracking Portal</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Leaflet GIS Map CSS -->
+    <link rel="stylesheet" href="assets/leaflet.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="assets/leaflet.js"></script>
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-obsidian">
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- MASTER OWNER-ONLY AUTHENTICATION OVERLAY GATE                 -->
+    <!-- ------------------------------------------------------------- -->
+    <div class="master-auth-overlay" id="master-auth-overlay">
+        <div class="master-auth-card">
+            <div class="master-auth-emblem">
+                <img src="assets/logo.svg" alt="OCULA Logo" onerror="this.src='assets/logo.png'">
+            </div>
+            
+            <span class="master-auth-badge"><i class="fas fa-shield-halved"></i> MASTER SECURITY LEVEL 0</span>
+            <h2 class="master-auth-title">OCULA Audit Hub</h2>
+            <p class="master-auth-sub">Owner-Restricted Access & Activity Intelligence Portal. Enter your Master Passkey to unlock the tracking console.</p>
+            
+            <form onsubmit="OCULA_AUDIT.handleMasterLogin(event)">
+                <div class="master-input-group">
+                    <label class="master-input-label" for="master-pass-input">Master Passkey / PIN</label>
+                    <div class="master-input-wrap">
+                        <i class="fas fa-key prefix-icon"></i>
+                        <input type="password" id="master-pass-input" class="master-pass-field" placeholder="Enter master security key..." autocomplete="off" required>
+                        <button type="button" class="toggle-pass-btn" onclick="OCULA_AUDIT.toggleMasterPassVisibility()">
+                            <i class="fas fa-eye" id="master-pass-eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="master-auth-error" id="master-auth-error">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <span id="master-auth-error-text">Invalid Master Passkey. Access Denied.</span>
+                </div>
+
+                <button type="submit" class="master-unlock-btn" style="margin-top: 18px;">
+                    <i class="fas fa-lock-open"></i> <span>Unlock Audit Console</span>
+                </button>
+            </form>
+
+            <div class="master-auth-hint">
+                <i class="fas fa-shield-halved" style="color: var(--primary-cyan); margin-right: 4px;"></i>
+                Secured Master Intelligence Console
+            </div>
+        </div>
+    </div>
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- MASTER AUDIT PORTAL APP LAYOUT                                -->
+    <!-- ------------------------------------------------------------- -->
+    <div id="audit-app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div>
+                <div class="sidebar-brand-box">
+                    <a href="#" class="brand-row">
+                        <div class="brand-logo-wrap">
+                            <img src="assets/logo.svg" alt="Logo" class="brand-logo-img" onerror="this.src='assets/logo.png'">
+                        </div>
+                        <div class="brand-info">
+                            <span class="brand-name">OCULA AUDIT</span>
+                            <span class="brand-tagline">Access Intel Hub</span>
+                        </div>
+                    </a>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <div class="nav-category">Access Monitoring</div>
+                    
+                    <div class="nav-item active" data-screen="overview" onclick="OCULA_AUDIT.navigateTo('overview')">
+                        <div class="nav-item-left">
+                            <i class="fas fa-gauge-high"></i>
+                            <span>Live Overview</span>
+                        </div>
+                    </div>
+
+                    <div class="nav-item" data-screen="activity" onclick="OCULA_AUDIT.navigateTo('activity')">
+                        <div class="nav-item-left">
+                            <i class="fas fa-stream"></i>
+                            <span>Activity Stream</span>
+                        </div>
+                        <span class="nav-counter-badge" id="nav-badge-activity">0</span>
+                    </div>
+
+                    <div class="nav-item" data-screen="map" onclick="OCULA_AUDIT.navigateTo('map')">
+                        <div class="nav-item-left">
+                            <i class="fas fa-map-location-dot"></i>
+                            <span>Access Map</span>
+                        </div>
+                    </div>
+
+                    <div class="nav-category">Intelligence & Logs</div>
+
+                    <div class="nav-item" data-screen="analytics" onclick="OCULA_AUDIT.navigateTo('analytics')">
+                        <div class="nav-item-left">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Access Analytics</span>
+                        </div>
+                    </div>
+
+                    <div class="nav-item" data-screen="table" onclick="OCULA_AUDIT.navigateTo('table')">
+                        <div class="nav-item-left">
+                            <i class="fas fa-table-list"></i>
+                            <span>Full Audit Logs</span>
+                        </div>
+                    </div>
+
+                    <div class="nav-item" data-screen="sessions" onclick="OCULA_AUDIT.navigateTo('sessions')">
+                        <div class="nav-item-left">
+                            <i class="fas fa-desktop"></i>
+                            <span>Active Devices</span>
+                        </div>
+                        <span class="nav-counter-badge" id="nav-badge-sessions">1</span>
+                    </div>
+
+                    <div class="nav-category">Master Controls</div>
+
+                    <div class="nav-item" data-screen="settings" onclick="OCULA_AUDIT.navigateTo('settings')">
+                        <div class="nav-item-left">
+                            <i class="fas fa-sliders"></i>
+                            <span>Master Settings</span>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-owner-pill">
+                    <div class="owner-avatar">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                    <div class="owner-info">
+                        <span class="owner-name">Master Owner</span>
+                        <span class="owner-role">ROOT ACCESS LEVEL</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-action-row">
+                    <div class="theme-switch-row theme-quick-select" title="Toggle Black / White Appearance" onclick="OCULA_AUDIT.toggleTheme()" style="cursor: pointer; flex: 1;">
+                        <button class="theme-cycle-btn apple-theme-toggle-btn" id="sidebar-theme-badge" type="button" style="width: 100%; justify-content: space-between;">
+                            <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="theme-toggle-icon" id="sidebar-theme-icon"><i class="fas fa-moon"></i></span>
+                                <span id="sidebar-theme-name">Black</span>
+                            </span>
+                            <i class="fas fa-circle-half-stroke" style="font-size: 11px; opacity: 0.7;"></i>
+                        </button>
+                    </div>
+                    <button class="btn-sidebar-icon lock-btn" onclick="OCULA_AUDIT.lockPortal()" title="Lock Master Portal">
+                        <i class="fas fa-lock"></i> <span>Lock</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-wrapper">
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h2 class="page-title" id="header-page-title">
+                        <i class="fas fa-shield-halved"></i> Live Access Overview
+                    </h2>
+                    <span class="live-pulse-badge">
+                        <span class="pulse-dot"></span> LIVE SYNC ACTIVE
+                    </span>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-clock-pill">
+                        <i class="fas fa-clock" style="color: var(--primary-cyan);"></i>
+                        <span id="header-live-clock">--:--:-- IST</span>
+                    </div>
+
+                    <button class="btn-header-action" onclick="OCULA_AUDIT.syncActiveSessions(); OCULA_AUDIT.renderAllViews(); OCULA_AUDIT.showToast('Telemetry re-synchronized with active clients.', 'info');" title="Refresh Live Client Registry">
+                        <i class="fas fa-arrows-rotate" style="color: var(--primary-cyan);"></i> <span>Sync Telemetry</span>
+                    </button>
+
+                    <button class="btn-header-action btn-header-primary" onclick="OCULA_AUDIT.exportToCsv()">
+                        <i class="fas fa-file-csv"></i> <span>Export CSV</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Screen Scroll View Container -->
+            <div class="screen-scroll-container">
+                
+                <!-- ========================================================= -->
+                <!-- 1. LIVE OVERVIEW SCREEN                                   -->
+                <!-- ========================================================= -->
+                <section id="screen-overview" class="screen-view active">
+                    <!-- KPI Metric Grid -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-top">
+                                <div class="kpi-icon-box cyan"><i class="fas fa-arrow-right-to-bracket"></i></div>
+                                <span class="kpi-trend up"><i class="fas fa-satellite-dish"></i> Live Stream</span>
+                            </div>
+                            <div class="kpi-val" id="kpi-total-logins">0</div>
+                            <div class="kpi-lbl">Total Access Events Logged</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-top">
+                                <div class="kpi-icon-box green"><i class="fas fa-tower-broadcast"></i></div>
+                                <span class="kpi-trend up"><i class="fas fa-circle-dot"></i> Real-time</span>
+                            </div>
+                            <div class="kpi-val" id="kpi-active-sessions">0</div>
+                            <div class="kpi-lbl">Active Logged-In Sessions</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-top">
+                                <div class="kpi-icon-box purple"><i class="fas fa-user-shield"></i></div>
+                                <span class="kpi-trend up"><i class="fas fa-shield-halved"></i> Authorized</span>
+                            </div>
+                            <div class="kpi-val" id="kpi-admin-logins">0</div>
+                            <div class="kpi-lbl">Web Admin Control Panel Logins</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-top">
+                                <div class="kpi-icon-box cyan"><i class="fas fa-mobile-screen"></i></div>
+                                <span class="kpi-trend up"><i class="fas fa-mobile-screen"></i> Mobile Devices</span>
+                            </div>
+                            <div class="kpi-val" id="kpi-mobile-users">0</div>
+                            <div class="kpi-lbl">Citizen Mobile App Logins</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-top">
+                                <div class="kpi-icon-box red"><i class="fas fa-shield-virus"></i></div>
+                                <span class="kpi-trend down"><i class="fas fa-ban"></i> Blocked Threats</span>
+                            </div>
+                            <div class="kpi-val" id="kpi-failed-attempts" style="color: #EF4444;">0</div>
+                            <div class="kpi-lbl">Failed Password Attempts</div>
+                        </div>
+                    </div>
+
+                    <!-- Split Grid: Live Stream & Analytics -->
+                    <div class="dash-split-grid">
+                        <!-- Left: Live Activity Feed -->
+                        <div class="glass-card">
+                            <div class="section-header-row">
+                                <h3 class="section-title"><i class="fas fa-bolt"></i> Real-Time Access Activity Feed</h3>
+                                <button class="btn-header-action" style="height: 28px; font-size: 11px;" onclick="OCULA_AUDIT.navigateTo('activity')">
+                                    <span>View All Feed</span> <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            <div class="activity-feed-list" id="activity-feed-list">
+                                <!-- Dynamic JS Population -->
+                            </div>
+                        </div>
+
+                        <!-- Right: Platform & Auth Method Distribution -->
+                        <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div class="section-header-row">
+                                    <h3 class="section-title"><i class="fas fa-chart-pie"></i> Platform Access Split</h3>
+                                </div>
+                                <div style="height: 220px; position: relative;">
+                                    <canvas id="chart-platform-dist"></canvas>
+                                </div>
+                            </div>
+                            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted);">
+                                <span>Cross-App Broadcast: <b>Active</b></span>
+                                <span>Encryption: <b>AES-256</b></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================= -->
+                <!-- 2. FULL ACTIVITY STREAM SCREEN                            -->
+                <!-- ========================================================= -->
+                <section id="screen-activity" class="screen-view">
+                    <div class="glass-card">
+                        <div class="section-header-row">
+                            <h3 class="section-title"><i class="fas fa-stream"></i> Comprehensive Real-Time Login Stream</h3>
+                            <button class="btn-header-action" onclick="OCULA_AUDIT.clearAllAuditLogs()">
+                                <i class="fas fa-trash-can"></i> <span>Purge Logs</span>
+                            </button>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                            Chronological streaming timeline of all authorization, login, logout, and token refresh events across the OCULA ecosystem.
+                        </p>
+                        <div class="activity-feed-list" id="full-activity-stream-list" style="max-height: 650px;">
+                            <!-- Full stream JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================= -->
+                <!-- 3. GEOLOCATION ACCESS MAP SCREEN                          -->
+                <!-- ========================================================= -->
+                <section id="screen-map" class="screen-view">
+                    <div class="glass-card">
+                        <div class="section-header-row">
+                            <h3 class="section-title"><i class="fas fa-map-location-dot"></i> Live Geolocation Access Map</h3>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button class="btn-header-action" style="height: 30px; font-size: 11px; padding: 0 10px;" onclick="OCULA_AUDIT.centerMapOnCurrentLocation()" title="Center map on your exact GPS / GeoIP location">
+                                    <i class="fas fa-crosshairs" style="color: var(--primary-cyan);"></i> <span>Locate Position</span>
+                                </button>
+                                <span class="mono-cell" style="font-size: 11px; color: var(--primary-cyan);">
+                                    <i class="fas fa-satellite"></i> High-Precision GIS
+                                </span>
+                            </div>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                            Visual GIS map tracking real-time geographic locations of active devices, web admins, citizen mobile users, and security events.
+                        </p>
+
+                        <!-- Active Devices Quick-Focus Navigation Bar -->
+                        <div class="map-device-focus-bar" id="map-device-focus-bar">
+                            <div class="map-focus-label">
+                                <span class="pulse-dot"></span>
+                                <span>Active Devices:</span>
+                            </div>
+                            <div class="map-focus-pills" id="map-active-device-pills">
+                                <!-- Dynamic device pills populated by OCULA_AUDIT.renderMapDevicePills() -->
+                            </div>
+                        </div>
+
+                        <div class="audit-map-wrapper">
+                            <div id="audit-gis-map"></div>
+                            <div class="map-floating-intel">
+                                <div class="map-intel-stat"><span>Active Devices:</span> <span id="intel-active-devices" style="color: #10B981; font-weight: 700;">1 Online</span></div>
+                                <div class="map-intel-stat"><span>Active Geo Nodes:</span> <span id="intel-active-nodes">1 Node</span></div>
+                                <div class="map-intel-stat"><span>Top Region:</span> <span id="intel-top-region">Command HQ</span></div>
+                                <div class="map-intel-stat"><span>Threat Origin:</span> <span id="intel-threat-origin" style="color: #10B981;">None Detected</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================= -->
+                <!-- 4. ACCESS ANALYTICS SCREEN                                -->
+                <!-- ========================================================= -->
+                <section id="screen-analytics" class="screen-view">
+                    <div class="dash-split-grid">
+                        <div class="glass-card">
+                            <div class="section-header-row">
+                                <h3 class="section-title"><i class="fas fa-chart-simple"></i> Hourly Login Traffic Velocity</h3>
+                            </div>
+                            <div style="height: 320px; position: relative;">
+                                <canvas id="chart-access-timeline"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <div class="section-header-row">
+                                <h3 class="section-title"><i class="fas fa-id-badge"></i> Auth Provider Distribution</h3>
+                            </div>
+                            <div style="height: 320px; position: relative;">
+                                <canvas id="chart-auth-methods"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================= -->
+                <!-- 5. FULL SEARCHABLE AUDIT TABLE SCREEN                     -->
+                <!-- ========================================================= -->
+                <section id="screen-table" class="screen-view">
+                    <div class="table-filter-bar">
+                        <div class="search-box-wrap">
+                            <i class="fas fa-search"></i>
+                            <input type="text" class="table-search-input" placeholder="Search by name, email, IP, city, or Audit ID..." oninput="OCULA_AUDIT.onSearchInput(this.value)">
+                        </div>
+
+                        <div class="filter-select-group">
+                            <select class="filter-select" onchange="OCULA_AUDIT.onFilterChange('role', this.value)">
+                                <option value="ALL">All Roles</option>
+                                <option value="ADMIN">Admins Only</option>
+                                <option value="CITIZEN">Citizen Users</option>
+                                <option value="GUEST">Guest Users</option>
+                                <option value="THREAT_SUSPECT">Threat Suspects</option>
+                            </select>
+
+                            <select class="filter-select" onchange="OCULA_AUDIT.onFilterChange('platform', this.value)">
+                                <option value="ALL">All Platforms</option>
+                                <option value="ocula.co.in">ocula.co.in (Live Production)</option>
+                                <option value="WEB">Web Control Panel</option>
+                                <option value="ANDROID">Android App</option>
+                                <option value="AUDIT">Audit Hub</option>
+                            </select>
+
+                            <select class="filter-select" onchange="OCULA_AUDIT.onFilterChange('status', this.value)">
+                                <option value="ALL">All Statuses</option>
+                                <option value="SUCCESS">Success Only</option>
+                                <option value="FAILED">Failed Attempts</option>
+                            </select>
+
+                            <button class="btn-header-action" onclick="OCULA_AUDIT.exportToJson()">
+                                <i class="fas fa-file-code"></i> <span>Export JSON</span>
+                            </button>
+                            <button class="btn-header-action" onclick="OCULA_AUDIT.printAuditDossier()">
+                                <i class="fas fa-print"></i> <span>Print Dossier</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="audit-table-card">
+                        <div class="audit-table-responsive">
+                            <table class="audit-table">
+                                <thead>
+                                    <tr>
+                                        <th>Audit ID</th>
+                                        <th>Timestamp</th>
+                                        <th>Actor / Identity</th>
+                                        <th>Role</th>
+                                        <th>Platform</th>
+                                        <th>Auth Provider</th>
+                                        <th>IP & Location</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-table-body">
+                                    <!-- Dynamic Table Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-pagination-bar">
+                            <span id="table-page-info">Showing entries...</span>
+                            <div class="pagination-controls">
+                                <button class="btn-page" id="btn-prev-page" onclick="OCULA_AUDIT.changePage(-1)"><i class="fas fa-chevron-left"></i></button>
+                                <button class="btn-page" id="btn-next-page" onclick="OCULA_AUDIT.changePage(1)"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================= -->
+                <!-- 6. ACTIVE DEVICES & SESSIONS SCREEN                       -->
+                <!-- ========================================================= -->
+                <section id="screen-sessions" class="screen-view">
+                    <div class="glass-card">
+                        <div class="section-header-row">
+                            <h3 class="section-title"><i class="fas fa-desktop"></i> Active Connected Devices & Sessions</h3>
+                            <button class="btn-header-action" onclick="OCULA_AUDIT.renderActiveSessions()">
+                                <i class="fas fa-arrows-rotate"></i> <span>Refresh Sessions</span>
+                            </button>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
+                            Active instances of Web Admin Control Panel and Citizen Mobile App currently maintaining valid session tokens.
+                        </p>
+                        
+                        <div class="session-cards-grid" id="session-cards-grid">
+                            <!-- Dynamic Sessions Grid -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================= -->
+                <!-- 7. MASTER SECURITY SETTINGS SCREEN                        -->
+                <!-- ========================================================= -->
+                <section id="screen-settings" class="screen-view">
+                    <div class="settings-section-card">
+                        <div class="section-header-row">
+                            <h3 class="section-title"><i class="fas fa-key"></i> Master Security & Passkey Management</h3>
+                        </div>
+
+                        <div class="settings-row">
+                            <div class="settings-label">
+                                <strong>Change Master Security Passkey</strong>
+                                <span>Set a new passphrase or PIN to unlock this Master Audit Portal.</span>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="password" id="new-master-pass" class="settings-input" placeholder="New master passkey...">
+                                <button class="btn-header-action btn-header-primary" onclick="OCULA_AUDIT.setMasterPasskey(document.getElementById('new-master-pass').value)">
+                                    <span>Save Key</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-row">
+                            <div class="settings-label">
+                                <strong>Inactivity Auto-Lock Timer</strong>
+                                <span>Automatically lock the Master Portal if no mouse or keyboard activity is detected.</span>
+                            </div>
+                            <select class="filter-select" id="setting-autolock-select" onchange="OCULA_AUDIT.autoLockMinutes = parseInt(this.value); OCULA_AUDIT.resetAutoLockTimer(); OCULA_AUDIT.showToast('Auto-lock timer updated', 'info');">
+                                <option value="5">5 Minutes</option>
+                                <option value="15" selected>15 Minutes (Default)</option>
+                                <option value="30">30 Minutes</option>
+                                <option value="60">1 Hour</option>
+                                <option value="0">Never (Stay Unlocked)</option>
+                            </select>
+                        </div>
+
+                        <div class="settings-row">
+                            <div class="settings-label">
+                                <strong>Cross-App Live Broadcast Channel</strong>
+                                <span>Real-time inter-tab synchronization between OCULA Web App and Audit Hub via HTML5 BroadcastChannel API.</span>
+                            </div>
+                            <span class="status-pill success"><i class="fas fa-check"></i> BROADCAST ACTIVE</span>
+                        </div>
+
+                        <div class="settings-row">
+                            <div class="settings-label">
+                                <strong>Purge All Stored Audit Logs</strong>
+                                <span>Irreversibly delete all historical login records from the local browser storage engine.</span>
+                            </div>
+                            <button class="btn-terminate" style="flex: none; padding: 0 16px;" onclick="OCULA_AUDIT.clearAllAuditLogs()">
+                                <i class="fas fa-trash-can"></i> <span>Purge All Records</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="audit-toast-container" id="audit-toast-container"></div>
+
+    <!-- Main Logic Script -->
+    <script src="audit.js"></script>
+</body>
+</html>

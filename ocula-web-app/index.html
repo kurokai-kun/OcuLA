@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCULA — Omnisense, Localized Alerts</title>
+    <!-- Open Graph & Meta Preview Tags -->
+    <meta name="title" content="OCULA — Omnisense, Localized Alerts">
+    <meta name="description" content="Autonomous Multi-Hazard Early Warning System • AI Environmental Intelligence • Planetary Digital Twin">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="OCULA — Omnisense, Localized Alerts">
+    <meta property="og:description" content="Autonomous Multi-Hazard Early Warning System • AI Environmental Intelligence • Planetary Digital Twin">
+    <meta property="og:image" content="assets/disaster-preview.jpg">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="OCULA — Omnisense, Localized Alerts">
+    <meta property="twitter:description" content="Autonomous Multi-Hazard Early Warning System • AI Environmental Intelligence • Planetary Digital Twin">
+    <meta name="theme-color" content="#060914">
+    <link rel="canonical" href="https://ocula.co.in/">
+
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=5.0">
+    <link rel="alternate icon" type="image/png" href="assets/logo.png?v=5.0">
+    <link rel="shortcut icon" href="favicon.ico?v=5.0">
+    <link rel="apple-touch-icon" href="assets/logo.png?v=5.0">
+    
+    <!-- Bespoke Aerospace & Telemetry Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/leaflet.css">
+    <script src="assets/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="styles.css?v=7.0">
+    <style id="initial-screen-style"></style>
+    <script>
+        // Synchronously resolve initial screen, auth state, and theme before browser first paint to prevent any flicker/jump
+        (function() {
+            try {
+                var isAuth = false;
+                try {
+                    isAuth = sessionStorage.getItem("ocula_auth") === "true" || localStorage.getItem("ocula_auth") === "true";
+                } catch(e) {}
+
+                var validScreens = ["dashboard", "readings", "blind_spots", "satellite", "map", "alerts", "nodes", "assistant", "settings"];
+                var urlHash = window.location.hash ? window.location.hash.replace("#", "").trim().toLowerCase() : "";
+                var targetScreen = "dashboard";
+
+                if (isAuth) {
+                    document.documentElement.classList.add("is-authenticated");
+                    var savedTab = localStorage.getItem("ocula_active_tab");
+                    if (urlHash && validScreens.indexOf(urlHash) !== -1) {
+                        targetScreen = urlHash;
+                    } else if (savedTab && validScreens.indexOf(savedTab) !== -1) {
+                        targetScreen = savedTab;
+                    }
+                } else {
+                    document.documentElement.classList.remove("is-authenticated");
+                    if (urlHash && validScreens.indexOf(urlHash) !== -1) {
+                        try {
+                            history.replaceState(null, null, window.location.pathname + window.location.search);
+                        } catch(e) {}
+                    }
+                }
+                window.__INITIAL_SCREEN__ = targetScreen;
+
+                var savedTheme = localStorage.getItem("ocula_theme") || "black";
+                if (savedTheme === "white" || savedTheme === "light" || savedTheme === "cleanroom") {
+                    document.documentElement.classList.add("light-theme", "theme-cleanroom");
+                } else {
+                    document.documentElement.classList.add("theme-obsidian");
+                }
+
+                var el = document.getElementById('initial-screen-style');
+                if (el) {
+                    var css = '';
+                    if (isAuth) {
+                        css += '#landing-page, #admin-login-overlay { display: none !important; } ';
+                        css += '.screen-view { display: none !important; } ';
+                        css += '#screen-' + targetScreen + ' { display: flex !important; } ';
+                        css += '.nav-item[data-screen="' + targetScreen + '"] { background: rgba(0, 240, 255, 0.12) !important; border: 1px solid rgba(0, 240, 255, 0.45) !important; color: #FFFFFF !important; font-weight: 600 !important; } ';
+                        css += '.nav-item[data-screen="' + targetScreen + '"] i { color: #00F0FF !important; } ';
+                    } else {
+                        css += '#app { display: none !important; } ';
+                        css += '#landing-page { display: block !important; opacity: 1 !important; } ';
+                    }
+                    el.innerHTML = css;
+                }
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body>
+    <!-- ========================================================================= -->
+    <!-- OCULA PRESENTATION & LANDING PAGE (ENTRY GATE) -->
+    <!-- ========================================================================= -->
+    <div id="landing-page" class="landing-page">
+        <!-- Landing Navigation Bar -->
+        <header class="landing-header">
+            <div class="landing-nav-container">
+                <a href="#hero-section" class="landing-brand">
+                    <img src="assets/logo.svg" alt="OCULA Logo" class="landing-brand-logo" onerror="this.onerror=null;this.src='assets/logo.png';">
+                    <div class="landing-brand-text">
+                        <span class="landing-brand-name">OCULA</span>
+                        <span class="landing-brand-tag">OMNISENSE</span>
+                    </div>
+                </a>
+
+                <button class="landing-mobile-menu-btn" onclick="AURA_APP.toggleMobileMenu()" aria-label="Toggle Navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <nav class="landing-nav-links">
+                    <a href="#hero-section" class="landing-nav-link active">Overview</a>
+                    <a href="#section-twin" class="landing-nav-link">Planetary Twin</a>
+                    <a href="#section-blind-spots" class="landing-nav-link">Blind-Spot AI</a>
+                    <a href="#section-hardware" class="landing-nav-link">Hardware Mesh</a>
+                    <a href="#section-arch" class="landing-nav-link">Architecture</a>
+                </nav>
+
+                <div class="landing-nav-actions">
+                    <button class="landing-theme-toggle" onclick="AURA_APP.toggleTheme()" title="Toggle Dark/Light Mode">
+                        <i class="fas fa-moon dark-icon"></i>
+                        <i class="fas fa-sun light-icon"></i>
+                    </button>
+                    <button class="landing-btn-signin" onclick="AURA_APP.openLoginModal()">
+                        <span>Sign In</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Landing Hero Section -->
+        <section class="landing-hero" id="hero-section">
+            <div class="landing-hero-bg-grid"></div>
+            <div class="landing-hero-glow"></div>
+
+            <div class="landing-container landing-hero-grid">
+                <!-- Left: Hero Headline & CTAs -->
+                <div class="landing-hero-content">
+                    <div class="landing-live-badge">
+                        <span class="landing-live-dot"></span>
+                        <span>OCULA DISASTER INTELLIGENCE</span>
+                    </div>
+
+                    <h1 class="landing-hero-title">
+                        When disaster strikes,<br>
+                        know where to act <span class="highlight-amber">first.</span>
+                    </h1>
+
+                    <p class="landing-hero-desc">
+                        OCULA transforms planetary satellite feeds, AI-driven blind-spot risk modeling, and physical ESP32 mesh sensors into prioritized response intelligence — helping commanders protect lives in real-time.
+                    </p>
+
+                    <div class="landing-hero-cta-group">
+                        <button class="landing-btn-hero-primary" onclick="AURA_APP.openLoginModal()">
+                            <i class="fas fa-shield-halved"></i>
+                            <span>Launch Control Panel</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <a href="#section-twin" class="landing-btn-hero-secondary">
+                            <i class="fas fa-play"></i>
+                            <span>See How It Works</span>
+                        </a>
+                    </div>
+
+                    <!-- Trust / Specs Badge Row -->
+                    <div class="landing-hero-specs">
+                        <div class="spec-item">
+                            <i class="fas fa-bolt" style="color: #F59E0B;"></i>
+                            <span>24/7 LIVE</span>
+                        </div>
+                        <span class="spec-divider">•</span>
+                        <div class="spec-item">
+                            <i class="fas fa-microchip" style="color: #F59E0B;"></i>
+                            <span>ESP32 50ms SYNC</span>
+                        </div>
+                        <span class="spec-divider">•</span>
+                        <div class="spec-item">
+                            <i class="fas fa-shield-halved" style="color: #10B981;"></i>
+                            <span>OFFLINE GIS</span>
+                        </div>
+                        <span class="spec-divider">•</span>
+                        <div class="spec-item">
+                            <i class="fas fa-triangle-exclamation" style="color: #EF4444;"></i>
+                            <span>7 HAZARD VECTORS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Interactive Glassmorphism Telemetry Mockup -->
+                <div class="landing-hero-visual">
+                    <div class="hero-mockup-card">
+                        <div class="mockup-header">
+                            <div class="mockup-header-left">
+                                <span class="mockup-dot red"></span>
+                                <span class="mockup-dot yellow"></span>
+                                <span class="mockup-dot green"></span>
+                                <span class="mockup-title">RESPONSE_INTELLIGENCE // V6.0</span>
+                            </div>
+                            <span class="mockup-status-pill"><i class="fas fa-circle-dot"></i> Live Active</span>
+                        </div>
+
+                        <div class="mockup-body">
+                            <!-- Dramatic Imagery Visual with Detection Frame -->
+                            <div class="mockup-imagery-visual">
+                                <img src="assets/disaster-preview.jpg" alt="Disaster Response Aerial Telemetry">
+                                <div class="visual-detection-box">
+                                    <i class="fas fa-crosshairs"></i> PRIORITY 1 • CRITICAL INUNDATION
+                                </div>
+                                <div class="floating-response-intel">
+                                    <div class="intel-tag">Decision Support</div>
+                                    <div class="intel-title">Turning telemetry into decisions</div>
+                                    <div class="intel-steps">
+                                        <div class="intel-step"><strong>01</strong> Satellite & ESP32 stream</div>
+                                        <div class="intel-step"><strong>02</strong> AI Blind-spot risk triage</div>
+                                        <div class="intel-step"><strong>03</strong> Tactical alert dispatch</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live Telemetry Readout Grid -->
+                            <div class="mockup-telemetry-grid">
+                                <div class="telemetry-pill-card">
+                                    <span class="telemetry-pill-label">Composite AQI</span>
+                                    <span class="telemetry-pill-val aqi-moderate">78 Moderate</span>
+                                </div>
+                                <div class="telemetry-pill-card">
+                                    <span class="telemetry-pill-label">Active Hazards</span>
+                                    <span class="telemetry-pill-val hazard-count">7 Vectors Monitored</span>
+                                </div>
+                                <div class="telemetry-pill-card">
+                                    <span class="telemetry-pill-label">Hardware Node</span>
+                                    <span class="telemetry-pill-val node-live"><i class="fas fa-plug"></i> ESP32 COM3 Synced</span>
+                                </div>
+                                <div class="telemetry-pill-card">
+                                    <span class="telemetry-pill-label">AI Risk Score</span>
+                                    <span class="telemetry-pill-val ai-score">94% Confidence</span>
+                                </div>
+                            </div>
+
+                            <!-- Serial Terminal Stream Line -->
+                            <div class="mockup-terminal-ticker">
+                                <span class="terminal-prompt">$</span>
+                                <span class="terminal-text">telemetry.stream(115200) → InSAR Deform: +0.82mm | PM2.5: 29.0µg | Flood Risk: Level 3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Real-Time Metrics Strip -->
+        <section class="landing-metrics-strip">
+            <div class="landing-container metrics-grid">
+                <div class="metric-block">
+                    <span class="metric-number">50+</span>
+                    <span class="metric-label">Monitored Hazard Hotspots</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric-block">
+                    <span class="metric-number">&lt; 50ms</span>
+                    <span class="metric-label">Hardware Stream Latency</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric-block">
+                    <span class="metric-number">7</span>
+                    <span class="metric-label">Multi-Hazard Vectors</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric-block">
+                    <span class="metric-number">100%</span>
+                    <span class="metric-label">Offline-Resilient Tactical GIS</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Features 6-Pillar Bento Grid -->
+        <section class="landing-features" id="section-twin">
+            <div class="landing-container">
+                <div class="section-header-center">
+                    <span class="section-badge"><i class="fas fa-layer-group"></i> PLATFORM CAPABILITIES</span>
+                    <h2 class="section-title">Engineered for Planetary Early Warning</h2>
+                    <p class="section-desc">Six interlocking intelligence layers protecting communities against environmental and geophysical hazards.</p>
+                </div>
+
+                <div class="bento-grid">
+                    <!-- Feature 1: 3D Planetary Digital Twin (Wide Card) -->
+                    <div class="bento-card bento-wide">
+                        <div class="bento-icon-box" style="--c: #6366F1;">
+                            <i class="fas fa-earth-americas"></i>
+                        </div>
+                        <div class="bento-content">
+                            <span class="bento-tag">Interactive Digital Twin</span>
+                            <h3 class="bento-title">3D WebGL Planetary Earth</h3>
+                            <p class="bento-text">Real-time Three.js planetary sphere with atmospheric Rayleigh scattering, daytime terrain maps, cosmic starfields, and instant 2D/3D projection switching.</p>
+                        </div>
+                        <div class="bento-visual-preview">
+                            <div class="bento-mini-hud">
+                                <span><i class="fas fa-location-crosshairs"></i> Lat 28.61° N, Lng 77.20° E</span>
+                                <span class="badge-status-green">Optimal Orbit</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2: AI Blind-Spot Forecasting -->
+                    <div class="bento-card" id="section-blind-spots">
+                        <div class="bento-icon-box" style="--c: #F59E0B;">
+                            <i class="fas fa-eye-slash"></i>
+                        </div>
+                        <div class="bento-content">
+                            <span class="bento-tag">Predictive Risk Modeling</span>
+                            <h3 class="bento-title">AI Blind-Spot Radar</h3>
+                            <p class="bento-text">Detects unmonitored geotechnical zones using InSAR ground deformation radar, soil slope saturation indexes, and subterranean stress telemetry.</p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3: Physical ESP32 Sensor Streaming -->
+                    <div class="bento-card" id="section-hardware">
+                        <div class="bento-icon-box" style="--c: #10B981;">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="bento-content">
+                            <span class="bento-tag">Edge Hardware Mesh</span>
+                            <h3 class="bento-title">ESP32 WebSerial Sync</h3>
+                            <p class="bento-text">Direct physical microcontroller sensor integration streaming AQI, PM2.5, CO₂/Gas, VOC, temperature, and humidity at 115200 baud with zero third-party cloud lock-in.</p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 4: Multi-Hazard Threat Spectrum -->
+                    <div class="bento-card">
+                        <div class="bento-icon-box" style="--c: #EF4444;">
+                            <i class="fas fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="bento-content">
+                            <span class="bento-tag">Disaster Alert Matrix</span>
+                            <h3 class="bento-title">Standard Threat Spectrum</h3>
+                            <p class="bento-text">Unified early warning scale across 7 catastrophe vectors: Floods, Wildfires, Landslides, Particulate Pollution, Extreme Heat, Heatwaves, and Earthquakes.</p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 5: Rapid Emergency Dispatch -->
+                    <div class="bento-card">
+                        <div class="bento-icon-box" style="--c: #EC4899;">
+                            <i class="fas fa-truck-medical"></i>
+                        </div>
+                        <div class="bento-content">
+                            <span class="bento-tag">Response Coordination</span>
+                            <h3 class="bento-title">One-Click Incident Dispatch</h3>
+                            <p class="bento-text">Trigger rapid disaster alerts via automated multi-channel cellular SMS text broadcasts, instant siren activation, and evacuation perimeter calculations.</p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 6: AI Preparedness Assistant -->
+                    <div class="bento-card bento-wide">
+                        <div class="bento-icon-box" style="--c: #8B5CF6;">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div class="bento-content">
+                            <span class="bento-tag">Neural Conversational Copilot</span>
+                            <h3 class="bento-title">Disaster Preparedness Assistant</h3>
+                            <p class="bento-text">Natural language AI copilot providing localized survival strategies, emergency checklists, and live hazard assessments tailored to real-time coordinates.</p>
+                        </div>
+                        <div class="bento-visual-preview">
+                            <div class="bento-assistant-preview">
+                                <div class="assistant-chat-bubble"><i class="fas fa-robot"></i> "Active flood warning in Yamuna basin. Evacuate low-lying riverbanks immediately."</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Architecture Flow -->
+        <section class="landing-architecture" id="section-arch">
+            <div class="landing-container">
+                <div class="section-header-center">
+                    <span class="section-badge"><i class="fas fa-diagram-project"></i> HOW OCULA WORKS</span>
+                    <h2 class="section-title">From Ingestion to Response Intelligence.</h2>
+                    <p class="section-desc">Four unified pipelines transforming physical edge microcontrollers and orbital satellites into actionable disaster defense.</p>
+                </div>
+
+                <div class="architecture-steps-grid">
+                    <div class="arch-step-card">
+                        <div class="step-badge">01</div>
+                        <div class="step-icon"><i class="fas fa-satellite-dish"></i></div>
+                        <h4>Sensor & Orbit Ingestion</h4>
+                        <p>Physical ESP32 microcontrollers and Sentinel-5P / MODIS satellite passes stream continuous atmospheric readings.</p>
+                    </div>
+
+                    <div class="arch-step-card">
+                        <div class="step-badge">02</div>
+                        <div class="step-icon"><i class="fas fa-network-wired"></i></div>
+                        <h4>Edge Fusion & Validation</h4>
+                        <p>WebSerial and local telemetry pipelines sanitize data packets with CRC checksums and outlier noise filters.</p>
+                    </div>
+
+                    <div class="arch-step-card">
+                        <div class="step-badge">03</div>
+                        <div class="step-icon"><i class="fas fa-brain"></i></div>
+                        <h4>AI Blind-Spot Risk Engine</h4>
+                        <p>Neural inference calculates slope saturation, heat indices, and predicts unmonitored geotechnical hotspots.</p>
+                    </div>
+
+                    <div class="arch-step-card">
+                        <div class="step-badge">04</div>
+                        <div class="step-icon"><i class="fas fa-tower-broadcast"></i></div>
+                        <h4>Tactical Alert Dispatch</h4>
+                        <p>Interactive 3D digital twin visualization, emergency automated broadcasts, and instant civilian advisories.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action Banner -->
+        <section class="landing-cta-section">
+            <div class="landing-container">
+                <div class="landing-cta-box">
+                    <div class="cta-content">
+                        <h2>See the danger. Know where to act <span class="highlight-amber">first.</span></h2>
+                        <p>Deploy planetary multi-hazard intelligence, live satellite feeds, and ESP32 edge telemetry in one unified control panel.</p>
+                    </div>
+                    <div class="cta-actions">
+                        <button class="landing-btn-hero-primary" onclick="AURA_APP.openLoginModal()">
+                            <i class="fas fa-shield-halved"></i>
+                            <span>Enter Control Panel</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Landing Footer -->
+        <footer class="landing-footer">
+            <div class="landing-container landing-footer-grid">
+                <div class="footer-brand-col">
+                    <div class="landing-brand">
+                        <img src="assets/logo.svg" alt="OCULA Logo" class="landing-brand-logo" onerror="this.onerror=null;this.src='assets/logo.png';">
+                        <div class="landing-brand-text">
+                            <span class="landing-brand-name">OCULA</span>
+                            <span class="landing-brand-tag">OMNISENSE</span>
+                        </div>
+                    </div>
+                    <p class="footer-mission-text">Advanced Multi-Hazard Early Warning & Planetary Intelligence Digital Twin.</p>
+                    <span class="footer-security-note"><i class="fas fa-lock"></i> Protected by OCULA Security Matrix</span>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4>Platform</h4>
+                    <a href="#hero-section">Overview</a>
+                    <a href="#section-twin">Planetary Twin</a>
+                    <a href="#section-blind-spots">Blind-Spot AI</a>
+                    <a href="#section-hardware">Hardware Mesh</a>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4>Disaster Vectors</h4>
+                    <span>Floods & Storms</span>
+                    <span>Wildfire Telemetry</span>
+                    <span>Landslide Slopes</span>
+                    <span>Air Quality Index</span>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4>Control Panel</h4>
+                    <button class="footer-signin-btn" onclick="AURA_APP.openLoginModal()"><i class="fas fa-key"></i> Administrator Sign In</button>
+                    <span class="footer-version-tag">Build v6.0 • Active Mesh</span>
+                </div>
+            </div>
+
+            <div class="landing-container footer-bottom-row">
+                <span>&copy; 2026 OCULA — Omnisense, Localized Alerts. All rights reserved.</span>
+                <span>Working Prototype for SIH 2026 / The Code Alchemists</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Admin Authentication Gate Overlay / Modal -->
+    <div id="admin-login-overlay" class="admin-auth-overlay" style="display: none;">
+        <div class="admin-auth-backdrop" onclick="AURA_APP.closeLoginModal()"></div>
+        <div class="admin-auth-card" id="admin-auth-card">
+            <button type="button" class="admin-auth-close-btn" onclick="AURA_APP.closeLoginModal()" title="Close and return to overview">
+                <i class="fas fa-xmark"></i>
+            </button>
+            <div class="admin-auth-brand">
+                <img src="assets/logo.svg" alt="OCULA Logo" class="admin-auth-logo" onerror="this.onerror=null;this.src='assets/logo.png';">
+                <div class="admin-auth-title-group">
+                    <h2 class="admin-auth-title">OCULA</h2>
+                    <span class="admin-auth-badge"><i class="fas fa-shield-halved"></i> ADMIN CONTROL PANEL</span>
+                </div>
+            </div>
+
+            <div class="admin-auth-header-text">
+                <h3>Admin Authorization</h3>
+                <p>Restricted access • Enter administrator password to initialize multi-hazard satellite & mesh telemetry.</p>
+            </div>
+
+            <form id="admin-login-form" class="admin-auth-form" onsubmit="AURA_APP.handleAdminLogin(event)">
+                <div class="admin-input-group">
+                    <label for="admin-user-input"><i class="fas fa-user-shield"></i> Admin ID</label>
+                    <div class="admin-input-wrapper">
+                        <input type="text" id="admin-user-input" class="admin-auth-input" value="admin" autocomplete="username" required>
+                    </div>
+                </div>
+
+                <div class="admin-input-group">
+                    <label for="admin-pass-input"><i class="fas fa-key"></i> Security Password</label>
+                    <div class="admin-input-wrapper">
+                        <input type="password" id="admin-pass-input" class="admin-auth-input" placeholder="Enter password" autocomplete="current-password" required autofocus>
+                        <button type="button" class="admin-toggle-pass-btn" onclick="AURA_APP.toggleAdminPasswordVisibility()" title="Toggle visibility">
+                            <i class="fas fa-eye" id="admin-pass-eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="admin-auth-error" class="admin-auth-error" style="display: none;">
+                    <i class="fas fa-triangle-exclamation"></i> <span id="admin-auth-error-msg">Incorrect password. Access denied.</span>
+                </div>
+
+                <button type="submit" class="admin-submit-btn" id="admin-submit-btn">
+                    <span>Sign In</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="admin-auth-footer">
+                <span class="admin-auth-lock-note"><i class="fas fa-shield-halved" style="color: #F59E0B;"></i> Secured Access Portal</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-header">
+                <img src="assets/logo.svg" alt="OCULA Logo" class="brand-logo" onerror="this.onerror=null;this.src='assets/logo.png';">
+                <div class="brand-info">
+                    <h1>OCULA</h1>
+                    <p>Multi-Hazard Intel</p>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item" data-screen="dashboard" onclick="AURA_APP.navigateTo('dashboard')">
+                    <i class="fas fa-table-cells-large"></i><span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-screen="readings" onclick="AURA_APP.navigateTo('readings')">
+                    <i class="fas fa-table-list"></i><span>Readings</span>
+                </div>
+                <div class="nav-item" data-screen="blind_spots" onclick="AURA_APP.navigateTo('blind_spots')">
+                    <i class="fas fa-crosshairs"></i><span>Sensor Blind Spots</span>
+                </div>
+                <div class="nav-item" data-screen="satellite" onclick="AURA_APP.navigateTo('satellite')">
+                    <i class="fas fa-satellite"></i><span>Satellite Data</span>
+                </div>
+                <div class="nav-category">Multi-Hazard</div>
+                <div class="nav-item" data-screen="map" onclick="AURA_APP.navigateTo('map')">
+                    <i class="fas fa-globe"></i><span>Multi-Hazard Map</span>
+                </div>
+                <div class="nav-item" data-screen="alerts" onclick="AURA_APP.navigateTo('alerts')">
+                    <i class="fas fa-bell"></i><span>Emergency Alerts</span>
+                </div>
+                <div class="nav-item" data-screen="nodes" onclick="AURA_APP.navigateTo('nodes')">
+                    <i class="fas fa-tower-broadcast"></i><span>Node Management</span>
+                </div>
+                <div class="nav-category">Intelligence</div>
+                <div class="nav-item" data-screen="assistant" onclick="AURA_APP.navigateTo('assistant')">
+                    <i class="fas fa-comment-dots"></i><span>Assistant</span>
+                </div>
+                <div class="nav-item" data-screen="settings" onclick="AURA_APP.navigateTo('settings')">
+                    <i class="fas fa-gear"></i><span>Settings</span>
+                </div>
+            </nav>
+            <script>
+                (function() {
+                    var s = window.__INITIAL_SCREEN__ || 'dashboard';
+                    var item = document.querySelector('.nav-item[data-screen="' + s + '"]');
+                    if (item) item.classList.add('active');
+                })();
+            </script>
+            <div class="sidebar-footer">
+                <div class="theme-switch-row theme-quick-select" title="Toggle Black / White Appearance" onclick="AURA_APP.toggleTheme()" style="cursor: pointer;">
+                    <span><i class="fas fa-circle-half-stroke"></i> <span id="sidebar-theme-title">Appearance</span></span>
+                    <button class="theme-cycle-btn apple-theme-toggle-btn" id="sidebar-theme-badge" type="button">
+                        <span class="theme-toggle-icon" id="sidebar-theme-icon"><i class="fas fa-moon"></i></span>
+                        <span id="sidebar-theme-name">Black</span>
+                    </button>
+                </div>
+                <div class="theme-switch-row sensor-toggle-row" id="sidebar-sensor-row" title="Toggle ESP32 hardware connection">
+                    <span>
+                        <span class="status-dot disconnected" id="sidebar-status-dot"></span>
+                        <i class="fas fa-plug" id="sidebar-connect-icon"></i>
+                        <span id="sidebar-connect-label">Connect ESP32</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="esp32-hardware-toggle" onchange="AURA_APP.toggleEsp32Connect(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main View Area -->
+        <main class="main-wrapper">
+            <!-- Top Navigation Header (Matching Reference Image) -->
+            <header class="topbar">
+                <div class="topbar-left-nav" id="top-nav-dashboard-title">
+                    <div class="topbar-title-group">
+                        <h2 class="topbar-dashboard-title" id="topbar-main-title">Multi-Hazard Command Center</h2>
+                        <p class="topbar-dashboard-subtitle" id="topbar-main-subtitle">Real-Time Hazard Detection • Early Warning • Environmental Mesh</p>
+                    </div>
+                    <script>
+                        (function() {
+                            var s = window.__INITIAL_SCREEN__ || 'dashboard';
+                            var t = {
+                                "dashboard": { title: "Multi-Hazard Command Center", subtitle: "Real-Time Hazard Detection • Early Warning • Environmental Mesh" },
+                                "readings": { title: "Readings", subtitle: "Real-time telemetry records across local & regional sensor nodes" },
+                                "blind_spots": { title: "Sensor Blind Spots", subtitle: "AI-predicted coverage vulnerability gaps across monitoring networks" },
+                                "satellite": { title: "Satellite Data", subtitle: "Orbital Earth observation data & atmospheric column density retrievals" },
+                                "map": { title: "Multi-Hazard Map", subtitle: "Unified view of all hazard zones with filtering" },
+                                "alerts": { title: "Emergency Alerts", subtitle: "Active regional emergency notifications & real-time warnings" },
+                                "nodes": { title: "Node Management", subtitle: "Hardware network & sensor node diagnostic status" },
+                                "assistant": { title: "OCULA Assistant", subtitle: "Omnisense, Localized Alerts — Intelligence Assistant" },
+                                "settings": { title: "Settings & Connectivity", subtitle: "Hardware links, alerts & system configuration" }
+                            };
+                            if (t[s]) {
+                                var elT = document.getElementById("topbar-main-title");
+                                var elSub = document.getElementById("topbar-main-subtitle");
+                                if (elT) elT.textContent = t[s].title;
+                                if (elSub) elSub.textContent = t[s].subtitle;
+                            }
+                        })();
+                    </script>
+                </div>
+
+                <div class="topbar-right-nav">
+                    <div class="topbar-sensor-pill disconnected" id="topbar-sensor-pill" onclick="AURA_APP.connectHardware()" title="Click to Connect ESP32 Sensor">
+                        <span class="status-dot disconnected" id="topbar-status-dot"></span>
+                        <span id="topbar-status-text">Sensor Disconnected</span>
+                    </div>
+                    <button class="icon-btn notif-btn" onclick="AURA_APP.toggleNotifications()" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notif-badge" id="notif-badge-count">6</span>
+                    </button>
+                </div>
+
+                <!-- Notifications Dropdown -->
+                <div class="notif-dropdown" id="notif-dropdown">
+                    <div class="notif-header">
+                        <span id="notif-header-title">Emergency Alerts (6 unread)</span>
+                        <span class="clear-notif-btn" onclick="AURA_APP.clearNotifications()">Clear</span>
+                    </div>
+                    <div class="notif-list" id="notif-list-container"></div>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- 1. DASHBOARD SCREEN WITH MULTI-HAZARD DETECTION COMMAND -->
+                <section id="screen-dashboard" class="screen-view">
+                    <!-- Dashboard Global Location & Hazard Search Bar -->
+                    <div class="search-container" style="margin-bottom: 14px;">
+                        <div class="search-input-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="dash-search-input" class="search-input" placeholder="Search any hazard zone, city or landmark in the world..." oninput="AURA_APP.onDashSearchInput(this.value)" onkeydown="if(event.key===`Enter`) AURA_APP.searchAndSelectDashLocation(this.value)">
+                            <div class="autocomplete-dropdown" id="dash-autocomplete"></div>
+                        </div>
+                        <button class="btn-primary" onclick="AURA_APP.useMyLocation(false)">
+                            <i class="fas fa-location-arrow"></i><span>My Location</span>
+                        </button>
+                    </div>
+
+                    <!-- Live Multi-Hazard Threat Ticker Strip -->
+                    <div class="dash-hazard-strip">
+                        <div class="dash-hazard-pill" onclick="AURA_APP.navigateTo('map')">
+                            <div class="dash-hazard-pill-icon" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6;">
+                                <i class="fas fa-water"></i>
+                            </div>
+                            <div class="dash-hazard-pill-info">
+                                <span class="dash-hazard-pill-title">Flood Alerts</span>
+                                <span class="dash-hazard-pill-val">4 Critical</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-hazard-pill" onclick="AURA_APP.navigateTo('map')">
+                            <div class="dash-hazard-pill-icon" style="background: rgba(239, 68, 68, 0.15); color: #EF4444;">
+                                <i class="fas fa-fire-flame-curved"></i>
+                            </div>
+                            <div class="dash-hazard-pill-info">
+                                <span class="dash-hazard-pill-title">Wildfires</span>
+                                <span class="dash-hazard-pill-val">6 Active</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-hazard-pill" onclick="AURA_APP.navigateTo('map')">
+                            <div class="dash-hazard-pill-icon" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;">
+                                <i class="fas fa-mountain"></i>
+                            </div>
+                            <div class="dash-hazard-pill-info">
+                                <span class="dash-hazard-pill-title">Landslides</span>
+                                <span class="dash-hazard-pill-val">3 High Risk</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-hazard-pill" onclick="AURA_APP.navigateTo('map')">
+                            <div class="dash-hazard-pill-icon" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">
+                                <i class="fas fa-volcano"></i>
+                            </div>
+                            <div class="dash-hazard-pill-info">
+                                <span class="dash-hazard-pill-title">Seismic</span>
+                                <span class="dash-hazard-pill-val">2 Monitored</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-hazard-pill" onclick="AURA_APP.navigateTo('map')">
+                            <div class="dash-hazard-pill-icon" style="background: rgba(249, 115, 22, 0.15); color: #F97316;">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div class="dash-hazard-pill-info">
+                                <span class="dash-hazard-pill-title">Heatwaves</span>
+                                <span class="dash-hazard-pill-val">5 Severe</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-hazard-pill" onclick="AURA_APP.navigateTo('map')">
+                            <div class="dash-hazard-pill-icon" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4;">
+                                <i class="fas fa-smog"></i>
+                            </div>
+                            <div class="dash-hazard-pill-info">
+                                <span class="dash-hazard-pill-title">Air Hazards</span>
+                                <span class="dash-hazard-pill-val">8 Hazardous</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dash-hero-container">
+                        <!-- Background Flare & Vertical Grid Lines -->
+                        <div class="dash-lens-flare"></div>
+                        <div class="dash-grid-lines"></div>
+
+                        <!-- Hero Main Content Grid -->
+                        <div class="dash-stage-layout">
+                            <!-- Left Column: Title & Cards Stack -->
+                            <div class="dash-left-cards">
+                                <!-- Title Header -->
+                                <div class="dash-title-group">
+                                    <h1 class="dash-hero-title">Multi-Hazard <span class="dash-title-thin">Intelligence</span></h1>
+                                    <div class="dash-timestamp-row" id="dash-live-time">25/07/2025 10:11</div>
+                                    <div class="dash-location-row" id="dash-location-badge">
+                                        Local &rarr; <span class="flag-icon">🇮🇳</span> Connaught Place, New Delhi
+                                    </div>
+                                </div>
+
+                                <!-- Card 1: Main Statistics & Threat Status -->
+                                <div class="glass-card stat-hero-card">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <span class="card-mini-title" style="margin-bottom: 0;">Multi-Hazard Threat Status</span>
+                                        <span style="font-size: 10px; font-weight: 700; background: rgba(245, 158, 11, 0.2); color: #F59E0B; padding: 2px 6px; border-radius: 4px;">LEVEL 2 WATCH</span>
+                                    </div>
+                                    <div class="stat-dual-grid">
+                                        <div class="stat-block">
+                                            <div class="stat-label">Composite AQI / Toxicity</div>
+                                            <div class="stat-big-num" id="hero-stat-aqi">78</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-footer-text" id="hero-stat-footer">Dominant Hazard &nbsp;<strong>PM2.5 & Thermal Stress</strong></div>
+                                </div>
+
+                                <!-- Card 2: Multi-Hazard Risk Index -->
+                                <div class="glass-card risk-hero-card">
+                                    <div class="risk-card-top">
+                                        <span class="card-mini-title">Multi-Hazard Predictive Risk</span>
+                                        <button class="risk-details-btn" onclick="AURA_APP.navigateTo('map')">Map</button>
+                                    </div>
+                                    <div class="risk-big-metric">
+                                        <span class="risk-metric-label">Risk Index</span>
+                                        <span class="risk-metric-val" id="hero-risk-percent">35%</span>
+                                    </div>
+                                    <!-- Animated Wave Graphic with Star Dust -->
+                                    <div class="risk-wave-graphic">
+                                        <svg viewBox="0 0 220 45" class="wave-svg">
+                                            <path d="M 0,22 Q 55,8 110,22 T 220,22" fill="none" stroke="#3B82F6" stroke-width="2.5" opacity="0.85" />
+                                            <path d="M 0,28 Q 55,16 110,28 T 220,28" fill="none" stroke="#60A5FA" stroke-width="1.5" opacity="0.6" />
+                                            <circle cx="45" cy="14" r="1.5" fill="#93C5FD" opacity="0.8"/>
+                                            <circle cx="160" cy="18" r="1.5" fill="#93C5FD" opacity="0.8"/>
+                                            <circle cx="190" cy="30" r="1" fill="#93C5FD" opacity="0.6"/>
+                                        </svg>
+                                    </div>
+                                    <div class="risk-subtext" id="hero-risk-subtext">Active monitoring for Flood, Fire & Air hazards</div>
+                                </div>
+
+                                <!-- Bottom Utilities Row (Share, Coordinates, Zoom) -->
+                                <div class="dash-hero-bottom-utils">
+                                    <div class="util-share-group">
+                                        <span class="share-label">Share</span>
+                                        <div class="share-icons-row">
+                                            <a href="javascript:void(0)" class="share-icon-btn" title="Share on Facebook" onclick="AURA_APP.shareToPlatform('facebook')"><i class="fab fa-facebook-f"></i></a>
+                                            <a href="javascript:void(0)" class="share-icon-btn" title="Share on X (Twitter)" onclick="AURA_APP.shareToPlatform('twitter')"><i class="fab fa-x-twitter"></i></a>
+                                            <a href="javascript:void(0)" class="share-icon-btn" title="Share on WhatsApp" onclick="AURA_APP.shareToPlatform('whatsapp')"><i class="fab fa-whatsapp"></i></a>
+                                        </div>
+                                    </div>
+                                    <div class="util-coordinates" id="hero-coordinates-text">
+                                        <div>X: &nbsp;5.404578</div>
+                                        <div>Y: -73.828177</div>
+                                    </div>
+                                    <div class="util-zoom-group">
+                                        <span class="zoom-label">Zoom</span>
+                                        <button class="zoom-round-btn" onclick="AURA_GLOBE.zoomIn()"><i class="fas fa-plus"></i></button>
+                                        <button class="zoom-round-btn" onclick="AURA_GLOBE.zoomOut()"><i class="fas fa-minus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Photorealistic 3D Earth Globe -->
+                            <div class="dash-right-globe-stage">
+                                <div id="globe-3d-wrapper" class="globe-3d-wrapper">
+                                    <!-- WebGL Canvas Container -->
+                                    <div id="globe-3d-canvas-container" class="globe-3d-canvas"></div>
+                                    
+                                    <!-- Detailed Floating Tooltip Card (Matching Reference Image) -->
+                                    <div class="globe-floating-card" id="globe-floating-tooltip">
+                                        <div class="floating-tooltip-card">
+                                            <div class="tooltip-card-header">
+                                                <div class="tooltip-header-left">
+                                                    <span class="dot-red-alert"></span>
+                                                    <span class="tooltip-city-name" id="globe-tooltip-city">Jakarta, Indonesia Air Quality</span>
+                                                </div>
+                                                <span class="tooltip-details-link" onclick="AURA_APP.navigateTo('map')">Details</span>
+                                            </div>
+                                            <div class="tooltip-card-body">
+                                                <span class="aqi-badge-orange" id="globe-tooltip-badge">137 IDN AQI</span>
+                                                <span class="aqi-status-text" id="globe-tooltip-desc">Unhealthy for sensitive people</span>
+                                            </div>
+                                            <div class="tooltip-weather-row">
+                                                <span><i class="fas fa-cloud-sun" style="color: #FCD34D;"></i> <strong id="globe-tip-temp">34°</strong></span>
+                                                <span><i class="fas fa-droplet" style="color: #60A5FA;"></i> <strong id="globe-tip-hum">50%</strong></span>
+                                                <span><i class="fas fa-wind" style="color: #A78BFA;"></i> <strong id="globe-tip-wind">13.2 km/h</strong></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Radiant Glowing Yellow Circular Badge with Pointer Arrow -->
+                                        <div class="globe-glowing-circle-badge" id="globe-circle-badge">
+                                            <span id="globe-circle-badge-num">78</span>
+                                            <div class="badge-pointer-arrow"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 2D IQ Air Map Container (When toggled to 2D) -->
+                                <div id="globe-2d-wrapper" class="globe-2d-wrapper">
+                                    <div id="globe-mini-map" class="globe-mini-map-view"></div>
+                                </div>
+
+                                <!-- Bottom 3D / 2D Switcher Pill (Always persistent) -->
+                                <div class="globe-view-switcher">
+                                    <button class="switcher-pill active" id="btn-mode-3d-globe" onclick="AURA_GLOBE.setMode('3d')">3D GLOBE</button>
+                                    <button class="switcher-pill" id="btn-mode-2d-map" onclick="AURA_GLOBE.setMode('2d')">IQ AIR MAP</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Hazard Threat Level Spectrum Bar -->
+                    <div class="dash-threat-spectrum-container">
+                        <div class="dash-threat-spectrum-header">
+                            <span class="dash-threat-spectrum-title"><i class="fas fa-triangle-exclamation" style="color: #F59E0B;"></i> Multi-Hazard Alert Spectrum</span>
+                            <span class="dash-threat-spectrum-sub">Standard Disaster Early Warning Scale</span>
+                        </div>
+                        <div class="dash-threat-spectrum-bar">
+                            <div class="dash-threat-step" style="--step-color: #10B981;">
+                                <strong>Level 1: Normal</strong>
+                                <span>Advisory / Stable</span>
+                            </div>
+                            <div class="dash-threat-step" style="--step-color: #F59E0B;">
+                                <strong>Level 2: Watch</strong>
+                                <span>Moderate Risk</span>
+                            </div>
+                            <div class="dash-threat-step" style="--step-color: #F97316;">
+                                <strong>Level 3: Warning</strong>
+                                <span>Elevated Hazard</span>
+                            </div>
+                            <div class="dash-threat-step" style="--step-color: #EF4444;">
+                                <strong>Level 4: Critical</strong>
+                                <span>Evacuation Notice</span>
+                            </div>
+                            <div class="dash-threat-step" style="--step-color: #8B5CF6;">
+                                <strong>Level 5: Disaster</strong>
+                                <span>Catastrophic Event</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dedicated AQI Scale Range Bar -->
+                    <div class="dash-aqi-range-bar-container" style="margin-top: 14px;">
+                        <div class="aqi-range-header">
+                            <span class="aqi-range-title"><i class="fas fa-gauge-high"></i> AQI Atmospheric Spectrum</span>
+                            <span class="aqi-range-sub">Air Quality Index Reference Scale</span>
+                        </div>
+                        <div class="dash-aqi-scale-bar">
+                            <div class="aqi-step" style="--c: #10B981;"><span>0-50</span> Good</div>
+                            <div class="aqi-step" style="--c: #F59E0B;"><span>51-100</span> Moderate</div>
+                            <div class="aqi-step" style="--c: #F97316;"><span>101-150</span> Sensitive</div>
+                            <div class="aqi-step" style="--c: #EF4444;"><span>151-200</span> Unhealthy</div>
+                            <div class="aqi-step" style="--c: #8B5CF6;"><span>201-300</span> Very Unhealthy</div>
+                            <div class="aqi-step" style="--c: #7F1D1D;"><span>301+</span> Hazardous</div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Live Multi-Hazard Telemetry Metric Cards Grid -->
+                    <div class="dashboard-metrics-grid" style="margin-top: 18px;">
+                        <!-- Card 1: Gas & Air Quality -->
+                        <div class="glass-card dash-metric-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <h4 style="font-size: 14px; font-weight: 600;"><i class="fas fa-wind" style="color: var(--primary-purple); margin-right: 6px;"></i> Gas & Air Quality</h4>
+                                        <p style="font-size: 11px; color: var(--text-muted);" id="aq-card-subtitle">Gas load, particulate index & VOC level</p>
+                                    </div>
+                                    <span id="hw-live-pill" style="font-size: 9px; font-weight: bold; background: rgba(239, 68, 68, 0.15); color: var(--status-unhealthy); padding: 3px 8px; border-radius: 4px; display: none;">OFFLINE</span>
+                                </div>
+                                <div style="display: flex; align-items: baseline; gap: 8px; margin: 12px 0 8px 0;">
+                                    <span style="font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace;" id="val-gas-ppm">1169</span>
+                                    <span style="font-size: 13px; color: var(--text-muted);">ppm</span>
+                                    <span id="val-gas-tag" class="oled-tag-warn" style="font-size: 13px; font-weight: 800; font-family: 'JetBrains Mono', monospace;">(WARN)</span>
+                                </div>
+                            </div>
+                            <div class="metric-tile-group">
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Gas Load</span><span class="status-dot disconnected" id="dot-co2" style="background: var(--status-unhealthy);"></span></div>
+                                    <div class="mini-val" id="val-co2">28%</div>
+                                    <div class="mini-status" id="status-co2" style="color: var(--status-good);">Good</div>
+                                </div>
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>PM2.5</span><span class="status-dot disconnected" id="dot-pm25" style="background: var(--status-unhealthy);"></span></div>
+                                    <div class="mini-val" id="val-pm25">29.0 µg/m³</div>
+                                    <div class="mini-status" id="status-pm25" style="color: var(--status-good);">Good</div>
+                                </div>
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>VOC</span><span class="status-dot disconnected" id="dot-voc" style="background: var(--status-unhealthy);"></span></div>
+                                    <div class="mini-val" id="val-voc">Normal</div>
+                                    <div class="mini-status" id="status-voc" style="color: var(--status-good);">Normal</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Climate & Atmosphere (T & H) -->
+                        <div class="glass-card dash-metric-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <h4 style="font-size: 14px; font-weight: 600;"><i class="fas fa-temperature-three-quarters" style="color: #F97316; margin-right: 6px;"></i> Atmosphere & Climate</h4>
+                                        <p style="font-size: 11px; color: var(--text-muted);">Ambient temperature & relative humidity</p>
+                                    </div>
+                                    <span id="temp-hw-pill" style="font-size: 9px; font-weight: bold; background: rgba(239, 68, 68, 0.15); color: var(--status-unhealthy); padding: 3px 8px; border-radius: 4px; display: none;">OFFLINE</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin: 12px 0 8px 0;">
+                                    <div>
+                                        <span style="font-size: 13px; font-weight: 700; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">T: </span>
+                                        <span style="font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace;" id="val-temp">27.6</span>
+                                        <span style="font-size: 13px; color: var(--text-muted);"> °C</span>
+                                        <div style="font-size: 11px; color: var(--status-good); margin-top: 2px;" id="status-temp">• Optimal comfort</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span style="font-size: 13px; font-weight: 700; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">H: </span>
+                                        <span style="font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace;" id="val-humidity">81</span>
+                                        <span style="font-size: 13px; color: var(--text-muted);"> %</span>
+                                        <div style="font-size: 11px; color: #38BDF8; margin-top: 2px;" id="status-humidity">High Humidity</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="metric-tile-group" style="grid-template-columns: repeat(2, 1fr);">
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Dew Point</span><i class="fas fa-droplet" style="color: #38BDF8; font-size: 10px;"></i></div>
+                                    <div class="mini-val" id="val-dew-point">24.1 °C</div>
+                                    <div class="mini-status" style="color: var(--text-muted);">Condensation Line</div>
+                                </div>
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Heat Index</span><i class="fas fa-sun" style="color: #F97316; font-size: 10px;"></i></div>
+                                    <div class="mini-val" id="val-comfort-index">31.2 °C</div>
+                                    <div class="mini-status" style="color: var(--status-moderate);">Humid / Warm</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Water, Inundation & Soil Saturation -->
+                        <div class="glass-card dash-metric-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <h4 style="font-size: 14px; font-weight: 600;"><i class="fas fa-water" style="color: #06B6D4; margin-right: 6px;"></i> Inundation & Moisture</h4>
+                                        <p style="font-size: 11px; color: var(--text-muted);">Surface flood stage & soil saturation</p>
+                                    </div>
+                                    <span id="water-hw-pill" style="font-size: 9px; font-weight: bold; background: rgba(239, 68, 68, 0.15); color: var(--status-unhealthy); padding: 3px 8px; border-radius: 4px; display: none;">OFFLINE</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin: 12px 0 8px 0;">
+                                    <div>
+                                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">INUNDATION STAGE</div>
+                                        <span style="font-size: 26px; font-weight: 800; color: var(--status-good); font-family: 'JetBrains Mono', monospace;" id="val-water">DRY</span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">SOIL MOISTURE</div>
+                                        <span style="font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #38BDF8;" id="val-soil-moist">42%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="metric-tile-group" style="grid-template-columns: 1fr;">
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Subsurface Saturation Index</span><span id="status-soil-moist" style="color: var(--status-good); font-size: 10.5px; font-weight: 700;">Optimal</span></div>
+                                    <div class="soil-bar-track" style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; margin: 6px 0 4px 0; overflow: hidden;">
+                                        <div id="soil-moist-bar" style="width: 42%; height: 100%; background: linear-gradient(90deg, #10B981, #06B6D4); border-radius: 3px; transition: width 0.4s ease;"></div>
+                                    </div>
+                                    <div class="mini-status" id="status-water" style="color: var(--status-good);">• All Baselines Secure</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Optical Flame & Fire Detection -->
+                        <div class="glass-card dash-metric-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <h4 style="font-size: 14px; font-weight: 600;"><i class="fas fa-fire-flame-curved" style="color: #EF4444; margin-right: 6px;"></i> Flame & Fire Defense</h4>
+                                        <p style="font-size: 11px; color: var(--text-muted);">Optical infrared & combustion detection</p>
+                                    </div>
+                                    <span id="fire-hw-pill" style="font-size: 9px; font-weight: bold; background: rgba(239, 68, 68, 0.15); color: var(--status-unhealthy); padding: 3px 8px; border-radius: 4px; display: none;">OFFLINE</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin: 12px 0 8px 0;">
+                                    <div>
+                                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">FLAME STATUS</div>
+                                        <span style="font-size: 26px; font-weight: 800; color: var(--status-good); font-family: 'JetBrains Mono', monospace;" id="val-fire">SAFE</span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">OPTICAL IR</div>
+                                        <span style="font-size: 14px; font-weight: 800; color: var(--status-good); font-family: 'JetBrains Mono', monospace;" id="val-ir-status">NOMINAL</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="metric-tile-group" style="grid-template-columns: repeat(2, 1fr);">
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Thermal Threat</span><i class="fas fa-shield-halved" style="color: var(--status-good); font-size: 10px;"></i></div>
+                                    <div class="mini-val" id="status-fire" style="color: var(--status-good); font-size: 13px;">Clear / Baseline</div>
+                                    <div class="mini-status" style="color: var(--text-muted);">IR Spectrum Clear</div>
+                                </div>
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Relay Siren</span><i class="fas fa-bell" style="color: #38BDF8; font-size: 10px;"></i></div>
+                                    <div class="mini-val" id="val-fire-relay" style="color: var(--status-good); font-size: 13px;">STANDBY</div>
+                                    <div class="mini-status" style="color: var(--text-muted);">Auto-Cutoff Armed</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 5: 3-Axis Seismic, Tremor & Vibration -->
+                        <div class="glass-card dash-metric-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <h4 style="font-size: 14px; font-weight: 600;"><i class="fas fa-volcano" style="color: #F59E0B; margin-right: 6px;"></i> Seismic & Vibration</h4>
+                                        <p style="font-size: 11px; color: var(--text-muted);">3-axis acceleration & tremor vector</p>
+                                    </div>
+                                    <span id="vib-hw-pill" style="font-size: 9px; font-weight: bold; background: rgba(239, 68, 68, 0.15); color: var(--status-unhealthy); padding: 3px 8px; border-radius: 4px; display: none;">OFFLINE</span>
+                                </div>
+                                <div style="margin: 12px 0 8px 0; display: flex; align-items: baseline; gap: 8px;">
+                                    <span style="font-size: 20px; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono', monospace;" id="val-vib-severity">LIGHT</span>
+                                    <span style="font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace;" id="val-vibration">1.8</span>
+                                    <span style="font-size: 13px; color: var(--text-muted);">m/s²</span>
+                                </div>
+                            </div>
+                            <div class="metric-tile-group" style="grid-template-columns: repeat(2, 1fr);">
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Peak Vector</span><i class="fas fa-chart-line" style="color: #F59E0B; font-size: 10px;"></i></div>
+                                    <div class="mini-val" id="val-peak-shock">0.18 g</div>
+                                    <div class="mini-status" style="color: var(--text-muted);">Ground Acceleration</div>
+                                </div>
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Structural State</span><i class="fas fa-building-shield" style="color: #10B981; font-size: 10px;"></i></div>
+                                    <div class="mini-val" id="status-vibration" style="color: var(--status-good); font-size: 12px;">Stable</div>
+                                    <div class="mini-status" style="color: var(--status-good);">Low Tremor Baseline</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 6: Gateway Link, Mesh & Node Status -->
+                        <div class="glass-card dash-metric-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <h4 style="font-size: 14px; font-weight: 600;"><i class="fas fa-network-wired" style="color: #10B981; margin-right: 6px;"></i> Gateway & Mesh Network</h4>
+                                        <p style="font-size: 11px; color: var(--text-muted);">ESP32 link protocol & telemetry stream</p>
+                                    </div>
+                                    <span id="gateway-hw-pill" style="font-size: 9px; font-weight: bold; background: rgba(239, 68, 68, 0.15); color: var(--status-unhealthy); padding: 3px 8px; border-radius: 4px;">DISCONNECTED</span>
+                                </div>
+                                <div style="margin: 12px 0 8px 0; display: flex; align-items: baseline; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">LINK STATE</div>
+                                        <span style="font-size: 20px; font-weight: 800; color: var(--status-unhealthy); font-family: 'JetBrains Mono', monospace;" id="val-gateway-status">DISCONNECTED</span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">INTERFACE</div>
+                                        <span style="font-size: 14px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);" id="val-gateway-interface">Standby</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="metric-tile-group">
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Mesh Node</span><span class="status-dot disconnected" id="dot-mesh-node" style="background: var(--status-unhealthy);"></span></div>
+                                    <div class="mini-val" id="val-mesh-node">Offline</div>
+                                    <div class="mini-status" id="status-mesh-node" style="color: var(--status-unhealthy);">Disconnected</div>
+                                </div>
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>RF / RSSI</span><i class="fas fa-wifi" style="color: var(--text-muted); font-size: 10px;"></i></div>
+                                    <div class="mini-val" id="val-mesh-rssi" style="color: var(--text-muted);">0 dBm</div>
+                                    <div class="mini-status" id="status-mesh-rssi" style="color: var(--text-muted);">No Link</div>
+                                </div>
+                                <div class="metric-mini-tile">
+                                    <div class="mini-label"><span>Sync Rate</span><i class="fas fa-arrows-rotate" style="color: var(--text-muted); font-size: 10px;"></i></div>
+                                    <div class="mini-val" id="val-sync-rate" style="color: var(--text-muted);">0.0 Hz</div>
+                                    <div class="mini-status" id="status-sync-rate" style="color: var(--text-muted);">Standby</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Multi-Hazard Incident Detection Grid -->
+                    <div class="dash-incidents-section">
+                        <div class="dash-incidents-header">
+                            <div class="dash-incidents-title-group">
+                                <h3><i class="fas fa-satellite-dish" style="color: #38BDF8;"></i> Live Detected Multi-Hazard Incidents</h3>
+                                <p>Real-time satellite observations (MODIS/Sentinel) and IoT ground sensor telemetry</p>
+                            </div>
+                            <button class="btn-primary" style="padding: 6px 14px; font-size: 12px;" onclick="AURA_APP.navigateTo('alerts')">
+                                <i class="fas fa-bell"></i><span>View All Alerts</span>
+                            </button>
+                        </div>
+
+                        <div class="dash-incidents-grid">
+                            <!-- Incident 1: Flood -->
+                            <div class="dash-incident-card" style="--hazard-accent: #3B82F6;">
+                                <div class="dash-incident-top">
+                                    <span class="dash-incident-type-tag"><i class="fas fa-water" style="color: #3B82F6;"></i> Flood Surge</span>
+                                    <span class="dash-incident-status-pill" style="background: rgba(239, 68, 68, 0.2); color: #EF4444;">CRITICAL</span>
+                                </div>
+                                <div class="dash-incident-loc">🌊 Brahmaputra Basin, Assam</div>
+                                <div class="dash-incident-desc">River surge +4.2m above danger mark. Inundation across 42 villages.</div>
+                                <div class="dash-incident-metrics-row">
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">AI Match:</span>
+                                        <span class="dash-incident-stat-val" style="color: #38BDF8;">94%</span>
+                                    </div>
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">Feed:</span>
+                                        <span class="dash-incident-stat-val">Sentinel-1 SAR</span>
+                                    </div>
+                                </div>
+                                <div class="dash-incident-actions">
+                                    <button class="btn-incident-map" onclick="AURA_APP.navigateTo('map')"><i class="fas fa-map-location-dot"></i> Map</button>
+                                    <button class="btn-incident-alert" onclick="AURA_APP.triggerSampleIncidentAlert('Flood', 'Brahmaputra Basin, Assam')"><i class="fas fa-triangle-exclamation"></i> Alert</button>
+                                </div>
+                            </div>
+
+                            <!-- Incident 2: Wildfire -->
+                            <div class="dash-incident-card" style="--hazard-accent: #EF4444;">
+                                <div class="dash-incident-top">
+                                    <span class="dash-incident-type-tag"><i class="fas fa-fire-flame-curved" style="color: #EF4444;"></i> Wildfire Front</span>
+                                    <span class="dash-incident-status-pill" style="background: rgba(239, 68, 68, 0.2); color: #EF4444;">ACTIVE</span>
+                                </div>
+                                <div class="dash-incident-loc">🔥 Pantanal Wetlands, Brazil</div>
+                                <div class="dash-incident-desc">18 active thermal hotspots detected via MODIS. Dense particulate plume.</div>
+                                <div class="dash-incident-metrics-row">
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">AI Match:</span>
+                                        <span class="dash-incident-stat-val" style="color: #EF4444;">98%</span>
+                                    </div>
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">Feed:</span>
+                                        <span class="dash-incident-stat-val">MODIS Terra</span>
+                                    </div>
+                                </div>
+                                <div class="dash-incident-actions">
+                                    <button class="btn-incident-map" onclick="AURA_APP.navigateTo('map')"><i class="fas fa-map-location-dot"></i> Map</button>
+                                    <button class="btn-incident-alert" onclick="AURA_APP.triggerSampleIncidentAlert('Wildfire', 'Pantanal Wetlands, Brazil')"><i class="fas fa-triangle-exclamation"></i> Alert</button>
+                                </div>
+                            </div>
+
+                            <!-- Incident 3: Landslide -->
+                            <div class="dash-incident-card" style="--hazard-accent: #8B5CF6;">
+                                <div class="dash-incident-top">
+                                    <span class="dash-incident-type-tag"><i class="fas fa-mountain" style="color: #8B5CF6;"></i> Landslide Risk</span>
+                                    <span class="dash-incident-status-pill" style="background: rgba(249, 115, 22, 0.2); color: #F97316;">HIGH RISK</span>
+                                </div>
+                                <div class="dash-incident-loc">⛰️ Wayanad Ghats, Kerala</div>
+                                <div class="dash-incident-desc">Soil saturation at 94%. High slope failure vulnerability along corridor.</div>
+                                <div class="dash-incident-metrics-row">
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">AI Match:</span>
+                                        <span class="dash-incident-stat-val" style="color: #A78BFA;">91%</span>
+                                    </div>
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">Feed:</span>
+                                        <span class="dash-incident-stat-val">IoT Piezometer</span>
+                                    </div>
+                                </div>
+                                <div class="dash-incident-actions">
+                                    <button class="btn-incident-map" onclick="AURA_APP.navigateTo('map')"><i class="fas fa-map-location-dot"></i> Map</button>
+                                    <button class="btn-incident-alert" onclick="AURA_APP.triggerSampleIncidentAlert('Landslide', 'Wayanad Ghats, Kerala')"><i class="fas fa-triangle-exclamation"></i> Alert</button>
+                                </div>
+                            </div>
+
+                            <!-- Incident 4: Extreme Heatwave -->
+                            <div class="dash-incident-card" style="--hazard-accent: #F97316;">
+                                <div class="dash-incident-top">
+                                    <span class="dash-incident-type-tag"><i class="fas fa-sun" style="color: #F97316;"></i> Heatwave Surge</span>
+                                    <span class="dash-incident-status-pill" style="background: rgba(239, 68, 68, 0.2); color: #EF4444;">EXTREME</span>
+                                </div>
+                                <div class="dash-incident-loc">☀️ Jacobabad Valley, Pakistan</div>
+                                <div class="dash-incident-desc">Surface temperature 49.4°C exceeding wet-bulb safety threshold.</div>
+                                <div class="dash-incident-metrics-row">
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">AI Match:</span>
+                                        <span class="dash-incident-stat-val" style="color: #F97316;">96%</span>
+                                    </div>
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">Delta:</span>
+                                        <span class="dash-incident-stat-val">+6.8°C Anomaly</span>
+                                    </div>
+                                </div>
+                                <div class="dash-incident-actions">
+                                    <button class="btn-incident-map" onclick="AURA_APP.navigateTo('map')"><i class="fas fa-map-location-dot"></i> Map</button>
+                                    <button class="btn-incident-alert" onclick="AURA_APP.triggerSampleIncidentAlert('Heatwave', 'Jacobabad Valley, Pakistan')"><i class="fas fa-triangle-exclamation"></i> Alert</button>
+                                </div>
+                            </div>
+
+                            <!-- Incident 5: Seismic / Volcanic -->
+                            <div class="dash-incident-card" style="--hazard-accent: #F59E0B;">
+                                <div class="dash-incident-top">
+                                    <span class="dash-incident-type-tag"><i class="fas fa-volcano" style="color: #F59E0B;"></i> Volcanic Tremor</span>
+                                    <span class="dash-incident-status-pill" style="background: rgba(245, 158, 11, 0.2); color: #F59E0B;">MONITORED</span>
+                                </div>
+                                <div class="dash-incident-loc">🌋 Reykjanes Peninsula, Iceland</div>
+                                <div class="dash-incident-desc">Magma dyke propagation with 320 micro-tremors in 24h. Sentinel SO2 feed.</div>
+                                <div class="dash-incident-metrics-row">
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">AI Match:</span>
+                                        <span class="dash-incident-stat-val" style="color: #FCD34D;">89%</span>
+                                    </div>
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">Feed:</span>
+                                        <span class="dash-incident-stat-val">Sentinel-5P SO2</span>
+                                    </div>
+                                </div>
+                                <div class="dash-incident-actions">
+                                    <button class="btn-incident-map" onclick="AURA_APP.navigateTo('map')"><i class="fas fa-map-location-dot"></i> Map</button>
+                                    <button class="btn-incident-alert" onclick="AURA_APP.triggerSampleIncidentAlert('Volcanic', 'Reykjanes Peninsula, Iceland')"><i class="fas fa-triangle-exclamation"></i> Alert</button>
+                                </div>
+                            </div>
+
+                            <!-- Incident 6: Toxic Smog / Air Hazard -->
+                            <div class="dash-incident-card" style="--hazard-accent: #06B6D4;">
+                                <div class="dash-incident-top">
+                                    <span class="dash-incident-type-tag"><i class="fas fa-smog" style="color: #06B6D4;"></i> Toxic Smog Inversion</span>
+                                    <span class="dash-incident-status-pill" style="background: rgba(239, 68, 68, 0.2); color: #EF4444;">HAZARDOUS</span>
+                                </div>
+                                <div class="dash-incident-loc">🌫️ Delhi NCR Megacity, India</div>
+                                <div class="dash-incident-desc">Atmospheric temperature inversion trapping PM2.5 at 285 µg/m³ (AQI 387).</div>
+                                <div class="dash-incident-metrics-row">
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">AI Match:</span>
+                                        <span class="dash-incident-stat-val" style="color: #38BDF8;">97%</span>
+                                    </div>
+                                    <div class="dash-incident-stat-box">
+                                        <span class="dash-incident-stat-label">Sensors:</span>
+                                        <span class="dash-incident-stat-val">12 ESP32 Mesh</span>
+                                    </div>
+                                </div>
+                                <div class="dash-incident-actions">
+                                    <button class="btn-incident-map" onclick="AURA_APP.navigateTo('map')"><i class="fas fa-map-location-dot"></i> Map</button>
+                                    <button class="btn-incident-alert" onclick="AURA_APP.triggerSampleIncidentAlert('Air Pollution', 'Delhi NCR Megacity, India')"><i class="fas fa-triangle-exclamation"></i> Alert</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7-Day Environmental Trends Chart -->
+                    <div class="glass-card" style="margin-top: 20px; margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">7-Day Environmental & Hazard Trends</h4>
+                        <p style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 14px;">Average AQI, PM2.5, temperature & humidity over the past week</p>
+                        <div style="height: 240px; position: relative;">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. READINGS SCREEN (MATCHING REFERENCE IMAGE) -->
+                <section id="screen-readings" class="screen-view">
+                    <!-- Controls Bar: Search + Source Filters + Export CSV -->
+                    <div class="readings-controls-bar">
+                        <div class="readings-controls-left">
+                            <div class="readings-search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="readings-search-input" class="readings-search-input" placeholder="Search sensor ID or location..." oninput="AURA_APP.onReadingsSearch(this.value)">
+                            </div>
+                            <div class="readings-filter-chips">
+                                <button class="readings-filter-chip active" id="chip-source-all" onclick="AURA_APP.filterReadingsSource('ALL', this)">All</button>
+                                <button class="readings-filter-chip" id="chip-source-sensor" onclick="AURA_APP.filterReadingsSource('Sensor', this)">Sensor</button>
+                                <button class="readings-filter-chip" id="chip-source-satellite" onclick="AURA_APP.filterReadingsSource('Satellite', this)">Satellite</button>
+                            </div>
+                        </div>
+
+                        <div class="readings-controls-right">
+                            <button class="btn-export-csv" onclick="AURA_APP.exportCsv()">
+                                <i class="fas fa-file-export"></i><span>Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Readings Data Table Card -->
+                    <div class="readings-table-card">
+                        <table class="readings-data-table">
+                            <thead>
+                                <tr>
+                                    <th>SENSOR</th>
+                                    <th>LOCATION</th>
+                                    <th>AQI</th>
+                                    <th>STATUS</th>
+                                    <th>PM2.5</th>
+                                    <th>Gas (%)</th>
+                                    <th>VOC</th>
+                                    <th>TEMP</th>
+                                    <th>HUMIDITY</th>
+                                    <th>SOURCE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="readings-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 3. SENSOR BLIND SPOTS SCREEN (MATCHING REFERENCE IMAGE) -->
+                <section id="screen-blind_spots" class="screen-view">
+                    <!-- Top Action Header Box -->
+                    <div class="blind-spots-header-box">
+                        <div class="blind-spots-header-left">
+                            <div class="blind-spot-logo-icon">
+                                <img src="assets/logo.svg" alt="OCULA" style="width: 22px; height: 22px; object-fit: contain;">
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h3 class="blind-spots-title">AI Sensor Blind Spots Coverage</h3>
+                                    <span class="aura-ai-pill">OCULA AI ENGINE</span>
+                                </div>
+                                <p class="blind-spots-sub">AI-predicted coverage vulnerability gaps across environmental & disaster monitoring networks</p>
+                            </div>
+                        </div>
+                        <button class="btn-regenerate-ai" onclick="AURA_APP.regenerateBlindSpots()">
+                            <i class="fas fa-wand-magic-sparkles"></i><span>Regenerate AI Analysis</span>
+                        </button>
+                    </div>
+
+                    <!-- Cyan Info / Shield Banner -->
+                    <div class="blind-spots-info-banner">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>This tool analyses existing sensor placements across air quality, flood, fire, and landslide monitoring nodes &mdash; then uses AI to estimate where unmonitored areas likely have elevated risk.</span>
+                    </div>
+
+                    <!-- 3-Column Blind Spots Cards Grid -->
+                    <div id="blind-spots-grid" class="blind-spots-grid-container"></div>
+                </section>
+
+                <!-- 4. SATELLITE DATA SCREEN -->
+                <section id="screen-satellite" class="screen-view">
+                    <div class="section-action-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="live-openmeteo-badge" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34D399; font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-satellite-dish"></i> Live Open-Meteo Feed Active
+                            </span>
+                            <span id="sat-location-badge" style="font-size: 11.5px; color: #94A3B8;">• Connaught Place, New Delhi</span>
+                        </div>
+                        <button class="btn-primary" onclick="AURA_APP.refreshSatellite()">
+                            <i class="fas fa-arrows-rotate"></i><span>Refresh Satellite Feed</span>
+                        </button>
+                    </div>
+
+                    <!-- 4-Card Top Grid -->
+                    <div id="sat-4grid-container" class="satellite-4grid" style="margin-top: 10px;">
+                        <div class="glass-card sat-metric-card">
+                            <div class="sat-header-row">
+                                <span class="sat-metric-label">Inundation Area</span>
+                                <span class="provenance-pill copernicus">DERIVED SAR</span>
+                            </div>
+                            <div class="sat-metric-val">148 <span class="sat-unit">km²</span></div>
+                            <div class="sat-metric-sub">• SAR water-threshold estimation</div>
+                        </div>
+                        <div class="glass-card sat-metric-card">
+                            <div class="sat-header-row">
+                                <span class="sat-metric-label">River Stage (Yamuna)</span>
+                                <span class="provenance-pill cwc">CWC BENCHMARK</span>
+                            </div>
+                            <div class="sat-metric-val">204.8 <span class="sat-unit">m</span></div>
+                            <div class="sat-metric-sub">CWC Danger Mark: 205.33m</div>
+                        </div>
+                        <div class="glass-card sat-metric-card">
+                            <div class="sat-header-row">
+                                <span class="sat-metric-label">Soil Saturation</span>
+                                <span class="provenance-pill sensor">GROUND TRUTH</span>
+                            </div>
+                            <div class="sat-metric-val">84.2 <span class="sat-unit">%</span></div>
+                            <div class="sat-metric-sub">• Capacitive probe ground truth</div>
+                        </div>
+                        <div class="glass-card sat-metric-card">
+                            <div class="sat-header-row">
+                                <span class="sat-metric-label">SAR Backscatter</span>
+                                <span class="provenance-pill copernicus">COPERNICUS SAR</span>
+                            </div>
+                            <div class="sat-metric-val">-16.4 <span class="sat-unit">dB</span></div>
+                            <div class="sat-metric-sub">• Sentinel-1 specular reflection</div>
+                        </div>
+                    </div>
+
+                    <!-- 3-Card Middle Grid -->
+                    <div id="sat-3grid-container" class="satellite-3grid">
+                        <div class="glass-card sat-metric-card">
+                            <div class="sat-header-row">
+                                <span class="sat-metric-label">Sentinel-1 SAR Status</span>
+                                <span class="provenance-pill orbit">SGP4 ORBITAL</span>
+                            </div>
+                            <div class="sat-metric-val">Active (IW)</div>
+                            <div class="sat-metric-sub">• 10m GRD dual-pol (VV+VH)</div>
+                        </div>
+                        <div class="glass-card sat-metric-card">
+                            <div class="sat-header-row">
+                                <span class="sat-metric-label">Drainage Outflow Rate</span>
+                                <span class="provenance-pill live">LIVE GLOFAS</span>
+                            </div>
+                            <div class="sat-metric-val">1,180 <span class="sat-unit">m³/s</span></div>
+                            <div class="sat-metric-sub">Live GloFAS hydrograph discharge</div>
+                        </div>
+                        <div class="glass-card sat-metric-card">
+                            <div class="sat-header-row">
+                                <span class="sat-metric-label">Flood Risk Index</span>
+                                <span class="provenance-pill calc">CALCULATED</span>
+                            </div>
+                            <div class="sat-metric-val">76 <span class="sat-unit">/100</span></div>
+                            <div class="sat-metric-sub">• Multi-variable weighted composite</div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Split Section -->
+                    <div class="satellite-bottom-split">
+                        <div class="glass-card">
+                            <h4 id="sat-regional-title" style="font-size: 15px; font-weight: 700; margin-bottom: 14px;"><i class="fas fa-water-ladder" style="color: var(--primary-cyan, #00F0FF); margin-right: 6px;"></i> Regional Flood Monitoring (CWC Benchmarks)</h4>
+                            <div id="sat-regional-container" class="regional-aod-table">
+                                <div class="aod-row">
+                                    <span class="aod-loc"><i class="fas fa-location-dot" style="font-size: 11px; margin-right: 4px; color: var(--primary-cyan);"></i> Yamuna Basin, Delhi</span>
+                                    <span class="aod-val">Stage: 204.8 m (CWC Danger: 205.33m)</span>
+                                    <span class="status-pill-badge moderate">Alert Stage</span>
+                                </div>
+                                <div class="aod-row">
+                                    <span class="aod-loc"><i class="fas fa-location-dot" style="font-size: 11px; margin-right: 4px; color: var(--primary-cyan);"></i> Brahmaputra Delta, Assam</span>
+                                    <span class="aod-val">Stage: 49.1 m (CWC Danger: 49.68m)</span>
+                                    <span class="status-pill-badge unhealthy">High Risk</span>
+                                </div>
+                                <div class="aod-row">
+                                    <span class="aod-loc"><i class="fas fa-location-dot" style="font-size: 11px; margin-right: 4px; color: var(--primary-cyan);"></i> Mithi River, Mumbai</span>
+                                    <span class="aod-val">Tide Stage: 2.9 m (CWC Danger: 3.50m)</span>
+                                    <span class="status-pill-badge moderate">Moderate</span>
+                                </div>
+                                <div class="aod-row">
+                                    <span class="aod-loc"><i class="fas fa-location-dot" style="font-size: 11px; margin-right: 4px; color: var(--primary-cyan);"></i> Godavari Delta, AP</span>
+                                    <span class="aod-val">Discharge: 8,400 m³/s (CWC Normal)</span>
+                                    <span class="status-pill-badge good">Normal</span>
+                                </div>
+                                <div class="aod-row">
+                                    <span class="aod-loc"><i class="fas fa-location-dot" style="font-size: 11px; margin-right: 4px; color: var(--primary-cyan);"></i> Kaveri Basin, TN</span>
+                                    <span class="aod-val">Outflow: 520 m³/s (CWC Normal)</span>
+                                    <span class="status-pill-badge good">Normal</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;"><i class="fas fa-satellite" style="color: var(--primary-cyan, #00F0FF); margin-right: 6px;"></i> Satellite Passes Schedule (SGP4 Dynamic Orbit)</h4>
+                            <div id="sat-passes-container" class="sat-schedule-list">
+                                <div class="schedule-card">
+                                    <div class="sched-top">
+                                        <strong><i class="fas fa-satellite" style="color: var(--primary-cyan); margin-right: 5px;"></i> Sentinel-1A (C-SAR)</strong>
+                                        <span class="sched-time" style="color: #34D399; font-weight: 700; font-size: 11.5px;">Today 21:45 IST (In 1h 15m)</span>
+                                    </div>
+                                    <div class="sched-desc" style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Interferometric Wide (IW) Swath • 10m Res • Elevation: 68° (Near-Zenith)</div>
+                                </div>
+                                <div class="schedule-card">
+                                    <div class="sched-top">
+                                        <strong><i class="fas fa-satellite" style="color: var(--primary-cyan); margin-right: 5px;"></i> RADARSAT Constellation</strong>
+                                        <span class="sched-time" style="color: #34D399; font-weight: 700; font-size: 11.5px;">Tomorrow 06:20 IST (In 9h 50m)</span>
+                                    </div>
+                                    <div class="sched-desc" style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Flood Rapid Inundation Mapping • 5m Res • Elevation: 54° (Ascending)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. MULTI-HAZARD MAP SCREEN -->
+                <section id="screen-map" class="screen-view">
+                    <div class="map-screen-layout">
+                        <!-- Search and My Location Row (Top) -->
+                        <div class="search-container" style="margin-bottom: 2px;">
+                            <div class="search-input-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="map-search-input" class="search-input" placeholder="Search any place, city or landmark in the world..." oninput="AURA_APP.onMapSearchInput(this.value)" onkeydown="if(event.key===`Enter`) AURA_APP.searchAndFlyMap(this.value)">
+                                <div class="autocomplete-dropdown" id="map-autocomplete"></div>
+                            </div>
+                            <button class="btn-primary" onclick="AURA_APP.useMyLocation(true)">
+                                <i class="fas fa-location-arrow"></i><span>My Location</span>
+                            </button>
+                        </div>
+
+                        <!-- Hazard Layer Filter Chips (Below Search) -->
+                        <div class="map-layer-chips">
+                            <button class="layer-chip chip-flood active" onclick="AURA_MAP.toggleLayer('FLOOD', this)"><i class="fas fa-water"></i> Flood</button>
+                            <button class="layer-chip chip-fire active" onclick="AURA_MAP.toggleLayer('FIRE', this)"><i class="fas fa-fire"></i> Fire</button>
+                            <button class="layer-chip chip-landslide active" onclick="AURA_MAP.toggleLayer('LANDSLIDE', this)"><i class="fas fa-triangle-exclamation"></i> Landslide</button>
+                            <button class="layer-chip chip-aqi active" onclick="AURA_MAP.toggleLayer('AIR_QUALITY', this)"><i class="fas fa-wind"></i> AQI</button>
+                            <button class="layer-chip chip-temp active" onclick="AURA_MAP.toggleLayer('TEMPERATURE', this)"><i class="fas fa-temperature-high"></i> Temperature</button>
+                            <button class="layer-chip chip-quake active" onclick="AURA_MAP.toggleLayer('EARTHQUAKE', this)"><i class="fas fa-wave-square"></i> Earthquake</button>
+                            <button class="layer-chip chip-heat active" onclick="AURA_MAP.toggleLayer('HEATWAVE', this)"><i class="fas fa-sun"></i> Heatwave</button>
+                        </div>
+
+                        <!-- Map Canvas Container -->
+                        <div class="mappls-map-wrapper">
+                            <div id="mappls-map" class="mappls-map-container"></div>
+                            <!-- Floating Map Controls -->
+                            <div class="mappls-map-controls">
+                                <button class="mappls-ctrl-btn" onclick="AURA_MAP.zoomIn()" title="Zoom In"><i class="fas fa-plus"></i></button>
+                                <button class="mappls-ctrl-btn" onclick="AURA_MAP.zoomOut()" title="Zoom Out"><i class="fas fa-minus"></i></button>
+                                <button class="mappls-ctrl-btn" onclick="AURA_MAP.resetView()" title="Center Map"><i class="fas fa-crosshairs"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Selected Map Point Details Inspector Panel (Below Map Layout) -->
+                        <div id="map-point-details-panel" class="map-point-details-container"></div>
+                    </div>
+                </section>
+
+                <!-- 6. EMERGENCY ALERTS SCREEN -->
+                <section id="screen-alerts" class="screen-view">
+                    <div class="section-action-header" style="justify-content: flex-end; margin-bottom: 16px;">
+                        <button class="btn-primary" onclick="AURA_APP.broadcastAlert()">
+                            <i class="fas fa-tower-broadcast"></i><span>Broadcast Emergency SMS</span>
+                        </button>
+                    </div>
+                    <div id="alerts-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                </section>
+
+                <!-- 7. NODE MANAGEMENT SCREEN -->
+                <section id="screen-nodes" class="screen-view">
+                    <div class="section-action-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="live-openmeteo-badge" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); color: #818CF8; font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-network-wired"></i> IoT Mesh Network Active
+                            </span>
+                            <span id="node-health-badge" style="font-size: 11.5px; color: #F59E0B; font-weight: 600;">• 5 Nodes Require Maintenance</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-notify-all-faults" onclick="AURA_APP.notifyAllNodeProblems()">
+                                <i class="fas fa-triangle-exclamation"></i><span>Notify All Node Faults</span>
+                            </button>
+                            <button class="btn-primary" onclick="AURA_APP.scanMeshNodes()">
+                                <i class="fas fa-tower-broadcast"></i><span>Scan Mesh</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Network Summary Diagnostics Bar -->
+                    <div class="node-summary-stats">
+                        <div class="node-stat-card">
+                            <div class="node-stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #818CF8;"><i class="fas fa-tower-cell"></i></div>
+                            <div class="node-stat-info">
+                                <span class="node-stat-val">9</span>
+                                <span class="node-stat-lbl">Total Deployed Nodes</span>
+                            </div>
+                        </div>
+                        <div class="node-stat-card">
+                            <div class="node-stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #34D399;"><i class="fas fa-circle-check"></i></div>
+                            <div class="node-stat-info">
+                                <span class="node-stat-val" id="stat-nodes-online">4</span>
+                                <span class="node-stat-lbl">Online & Healthy</span>
+                            </div>
+                        </div>
+                        <div class="node-stat-card">
+                            <div class="node-stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #FBBF24;"><i class="fas fa-triangle-exclamation"></i></div>
+                            <div class="node-stat-info">
+                                <span class="node-stat-val" id="stat-nodes-degraded">3</span>
+                                <span class="node-stat-lbl">Degraded / Weak Link</span>
+                            </div>
+                        </div>
+                        <div class="node-stat-card">
+                            <div class="node-stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #F87171;"><i class="fas fa-fire"></i></div>
+                            <div class="node-stat-info">
+                                <span class="node-stat-val" id="stat-nodes-alert">2</span>
+                                <span class="node-stat-lbl">Critical Incident / Fire</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="nodes-grid" class="node-cards-grid"></div>
+                </section>
+
+                <!-- 8. ASSISTANT SCREEN -->
+                <section id="screen-assistant" class="screen-view">
+                    <div class="assistant-layout">
+                        <div class="assistant-header">
+                            <div class="assistant-header-left">
+                                <div class="assistant-logo-box">
+                                    <img src="assets/logo.svg" alt="OCULA Logo" class="assistant-header-logo">
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 2px;">OCULA Assistant</h3>
+                                    <p style="font-size: 11px; color: var(--text-muted);">Omnisense, Localized Alerts — Intelligence Assistant</p>
+                                </div>
+                            </div>
+                            <div style="font-size: 10px; font-weight: 700; background: rgba(6, 182, 212, 0.15); color: var(--primary-cyan); padding: 3px 8px; border-radius: 12px; border: 1px solid rgba(6, 182, 212, 0.3);">
+                                • AI Online
+                            </div>
+                        </div>
+                        <div class="quick-prompts-row">
+                            <button class="prompt-chip" onclick="AURA_ASSISTANT.sendMessage('🔌 Show ESP32 pinout table for Water, Vibration, NRF24 & Relay')">🔌 ESP32 Circuit Pinout</button>
+                            <button class="prompt-chip" onclick="AURA_ASSISTANT.sendMessage('🌊 Arduino code for Water Level & Vibration sensor with Relay trigger')">🌊 Water & Vibration Code</button>
+                            <button class="prompt-chip" onclick="AURA_ASSISTANT.sendMessage('📡 How to wire NRF24L01 with AMS1117 3.3V regulator')">📡 NRF24L01 + AMS1117 Mesh</button>
+                            <button class="prompt-chip" onclick="AURA_ASSISTANT.sendMessage('⚡ Explain PC817 Optocoupler & Relay circuit for emergency sirens')">⚡ Optocoupler & Relay Siren</button>
+                            <button class="prompt-chip" onclick="AURA_ASSISTANT.sendMessage('🌫️ What does AQI 387 mean?')">🌫️ AQI Toxicity Guide</button>
+                        </div>
+                        <div class="chat-stream" id="chat-messages-container"></div>
+                        <div id="assistant-typing-indicator" style="display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--primary-cyan); padding: 4px 12px;">
+                            <i class="fas fa-wand-magic-sparkles"></i><span>OCULA AI is thinking & formatting response...</span>
+                        </div>
+                        <div class="chat-input-bar">
+                            <input type="text" id="assistant-input-field" placeholder="Ask OCULA anything (e.g. ESP32 wiring, Flood safety, NRF24 mesh)..." onkeydown="if(event.key==='Enter') AURA_APP.sendAssistantInput()">
+                            <button class="chat-send-btn" onclick="AURA_APP.sendAssistantInput()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 9. SETTINGS SCREEN (MATCHING REFERENCE IMAGE) -->
+                <section id="screen-settings" class="screen-view">
+                    <div class="settings-screen-container">
+                        <!-- 1. Hardware Connectivity Mode -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <i class="fas fa-plug" style="color: #00F0FF;"></i>
+                                <h4 class="settings-card-title">Hardware Connectivity Mode</h4>
+                            </div>
+                            <p class="settings-card-sub">Connect physical multi-hazard sensors (Water Level, Ground Tremor, Gas, Air Quality) & actuators (Optocoupler Relays, NRF24L01 mesh) via ESP32.</p>
+                            
+                            <div class="settings-hw-pills-row">
+                                <button class="settings-hw-pill active" id="btn-mode-usb" onclick="AURA_APP.setConnectionMode('USB', this)">
+                                    <i class="fas fa-microchip"></i> Wired USB (ESP32)
+                                </button>
+                                <button class="settings-hw-pill" id="btn-mode-wifi" onclick="AURA_APP.setConnectionMode('WIFI', this)">
+                                    <i class="fas fa-wifi"></i> Wi-Fi Gateway Mesh
+                                </button>
+                                <button class="settings-hw-pill" id="btn-mode-ble" onclick="AURA_APP.setConnectionMode('BLE', this)">
+                                    <i class="fab fa-bluetooth-b"></i> Bluetooth BLE
+                                </button>
+                            </div>
+
+                            <div class="settings-inset-box">
+                                <div class="settings-inset-text">
+                                    <div class="settings-inset-title" id="hw-toggle-title">ESP32 USB Hardware Link</div>
+                                    <div class="settings-inset-desc" id="hw-toggle-desc">Toggle live telemetry stream directly from connected hardware sensors (115200 baud)</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="hardware-stream-toggle" onchange="AURA_APP.toggleHardwareStream(this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 2. Alert Preferences -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <i class="fas fa-comment-sms" style="color: #F59E0B;"></i>
+                                <h4 class="settings-card-title">SMS & Text Notification Preferences</h4>
+                            </div>
+                            <div class="settings-inset-box" style="margin-top: 14px;">
+                                <div class="settings-inset-text">
+                                    <div class="settings-inset-title">Emergency SMS Cellular Broadcasts</div>
+                                    <div class="settings-inset-desc">Auto-transmit text notifications to deployed NDRF & Quick Response Units on threshold breaches</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="alerts-enabled-toggle" checked onchange="AURA_APP.toggleAlertsEnabled(this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="settings-inset-box" style="margin-top: 10px;">
+                                <div class="settings-inset-text">
+                                    <div class="settings-inset-title">Browser Push Text Alerts</div>
+                                    <div class="settings-inset-desc">Display native desktop and mobile text banners for real-time hazard warnings</div>
+                                </div>
+                                <button class="btn-primary" style="padding: 6px 14px; font-size: 11.5px; border-radius: 6px;" onclick="AURA_APP.requestNotificationPermission()">
+                                    <i class="fas fa-bell"></i><span>Enable Push</span>
+                                </button>
+                            </div>
+                            <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                <span style="font-size: 11.5px; color: #94A3B8;"><i class="fas fa-signal" style="color: #10B981;"></i> Cellular Mesh Gateway: <strong>Disaster Operations Dispatch Gateway (Cell Broadcast Band)</strong></span>
+                                <button class="btn-send-packet" style="padding: 6px 14px; font-size: 11.5px;" onclick="AURA_APP.sendTestTextNotification()">
+                                    <i class="fas fa-comment-sms"></i><span>Send Test SMS Alert</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 3. ESP32 Serial Packet Monitor -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <i class="fas fa-terminal" style="color: #06B6D4;"></i>
+                                <h4 class="settings-card-title">ESP32 Serial Packet Monitor</h4>
+                            </div>
+                            <p class="settings-card-sub">Real-time hardware serial input decoder & test payload injector (115200 baud)</p>
+                            
+                            <div class="settings-packet-input-row">
+                                <input type="text" id="serial-test-input" class="settings-packet-input" placeholder="e.g. WATER: DRY, VIB: 0.1, RELAY: ON, AQI: 82 or JSON packet" onkeydown="if(event.key==='Enter') AURA_APP.injectSerialPacket()">
+                                <button class="btn-send-packet" onclick="AURA_APP.injectSerialPacket()">
+                                    <i class="fas fa-play" style="font-size: 11px;"></i><span>Send Packet</span>
+                                </button>
+                            </div>
+                            <div class="settings-sample-chips-row">
+                                <button class="settings-sample-chip" onclick="AURA_APP.parseEsp32Serial('AQI: 68, PM2.5: 24.5, WATER: DRY, VIB: 0.1, RELAY: OFF')">Sample A (Normal: DRY)</button>
+                                <button class="settings-sample-chip" onclick="AURA_APP.parseEsp32Serial('WATER: FLOODED, VIB: 0.2, RELAY: ON, AQI: 85, TEMP: 28.2')">Sample B (Flood: FLOODED)</button>
+                                <button class="settings-sample-chip" onclick="AURA_APP.parseEsp32Serial('VIB: MOTION, WATER: DRY, RELAY: ON, AQI: 92, TEMP: 26.0')">Sample C (Earthquake: MOTION)</button>
+                                <button class="settings-sample-chip" onclick="AURA_APP.parseEsp32Serial('AQI: 387, PM2.5: 285.0, CO2: 890, VOC: High, TEMP: 35.5')">Sample D (Toxic Smog 387)</button>
+                            </div>
+                        </div>
+
+                        <!-- 4. System Diagnostics & Cloud AI (Exact Reference Replication) -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <i class="fas fa-microchip" style="color: #06B6D4;"></i>
+                                <h4 class="settings-card-title">System Diagnostics & Cloud AI</h4>
+                            </div>
+                            <div class="settings-diagnostics-grid">
+                                <div class="settings-diag-row">
+                                    <span class="settings-diag-label">Platform:</span>
+                                    <span class="settings-diag-val">OCULA — Omnisense, Localized Alerts</span>
+                                </div>
+                                <div class="settings-diag-row">
+                                    <span class="settings-diag-label">Node Framework:</span>
+                                    <span class="settings-diag-val">ESP32 Multi-Hazard Gateway + Expansion Board</span>
+                                </div>
+                                <div class="settings-diag-row">
+                                    <span class="settings-diag-label">Serial Link:</span>
+                                    <span class="settings-diag-val">Web Serial API @ 115200 Baud</span>
+                                </div>
+                                <div class="settings-diag-row">
+                                    <span class="settings-diag-label">AI Engine:</span>
+                                    <span class="settings-diag-val">Gemini 2.0 Flash / OpenRouter AI</span>
+                                </div>
+                                <div class="settings-diag-row">
+                                    <span class="settings-diag-label">Mesh Telemetry:</span>
+                                    <span class="settings-diag-val active-mesh">Active (NRF24L01 2.4GHz + ESP32 Synced)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Admin Control Panel Session (Logout) -->
+                        <div class="settings-card admin-session-card">
+                            <div class="settings-card-header" style="justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-shield-cat" style="color: #6366F1;"></i>
+                                    <h4 class="settings-card-title">Admin Control Panel</h4>
+                                </div>
+                                <span class="admin-badge-active"><i class="fas fa-circle-check"></i> Authenticated</span>
+                            </div>
+                            <p class="settings-card-sub">You are currently logged into the Admin Control Panel. Full hardware telemetry, AI dispatch, and sensor mesh monitoring are enabled.</p>
+                            
+                            <div class="admin-session-box">
+                                <div class="admin-session-info">
+                                    <div class="admin-session-avatar">
+                                        <i class="fas fa-user-shield"></i>
+                                    </div>
+                                    <div class="admin-session-details">
+                                        <strong>Admin Control Panel</strong>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button class="btn-admin-logout" onclick="AURA_APP.logout()">
+                                        <i class="fas fa-arrow-right-from-bracket"></i>
+                                        <span>Log Out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast-container" class="toast-container">
+        <div id="toast-banner" class="toast"></div>
+    </div>
+
+    <script src="data.js?v=5.0"></script>
+    <script src="map.js?v=5.4"></script>
+    <script src="earth_textures.js?v=5.0"></script>
+    <script src="globe.js?v=5.2"></script>
+    <script src="assistant.js?v=5.0"></script>
+    <script src="app.js?v=7.7"></script>
+</body>
+</html>
+
