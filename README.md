@@ -154,8 +154,7 @@ OcuLA/
 │
 └── research/                        # Supplementary research & presentations
     ├── methodology/                 #   Wayanad case study & charts
-    ├── presentation/                #   SIH 2026 pitch deck
-    └── visuals/                     #   Infographics & visual exhibits
+    └── presentation/                #   SIH 2026 pitch deck
 ```
 
 ---
@@ -190,7 +189,6 @@ The [`research/`](research/) directory contains supporting research, presentatio
 | [`ocula_wayanad_methodology.pdf`](research/methodology/ocula_wayanad_methodology.pdf) | 12-page geotechnical case study — Wayanad 2024 landslide counterfactual analysis |
 | [`ocula_wayanad_methodology.typ`](research/methodology/ocula_wayanad_methodology.typ) | Typst source for the methodology dossier |
 | [`The_Code_Alchemists_SIH2026.pdf`](research/presentation/The_Code_Alchemists_SIH2026.pdf) | Official SIH 2026 pitch deck |
-| [`research/visuals/`](research/visuals/) | Interactive HTML infographics and competitive analysis |
 
 The methodology paper includes infinite slope stability analysis, debris flow kinematics, evacuation margin calculations (19.4 min survival buffer), latency analysis (40,500× improvement), acoustic siren propagation models, and a full bill of materials (₹60,000 per 16-node cluster).
 
